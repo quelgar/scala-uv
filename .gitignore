@@ -1,0 +1,5 @@
+/target
+/project/target
+/project/project
+sbt-launch.jar
+src/test/resources/write-test.txt
