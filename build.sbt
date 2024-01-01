@@ -9,6 +9,8 @@ name := "scala-uv"
 
 version := "0.0.1"
 
+ThisBuild / versionScheme := Some("early-semver")
+
 // set to Debug for compilation details (Info is default)
 logLevel := Level.Info
 
@@ -31,4 +33,10 @@ scalacOptions ++= Seq(
   "-deprecation"
 )
 
-// Test / nativeLinkingOptions += "-luv"
+publishTo := sonatypePublishToBundle.value
+
+sonatypeCredentialHost := "s01.oss.sonatype.org"
+
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+
+credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
