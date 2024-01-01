@@ -201,6 +201,13 @@ object UvUtils {
 
   object FsReq {
 
+    /** Allocate a new FS request, provide it to the specified function, and
+      * clean it up after the function returns. Note this is only safe to use
+      * for **blocking** FS operations.
+      *
+      * @param f
+      *   A function that performs **blocking** FS operations.
+      */
     inline def use[A](inline f: Req => A): A = {
       val req = stackAllocateRequest(RequestType.FS)
       try f(req)

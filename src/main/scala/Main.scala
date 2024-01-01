@@ -4,7 +4,6 @@ import scala.scalanative.*
 import unsafe.*
 import unsigned.*
 import LibUv.*
-import UvUtils.*
 
 final class Test {
 
