@@ -6,7 +6,9 @@ Only Scala 3 is supported at this time.
 
 ## Getting it
 
-Not published yet.
+```scala
+libraryDependencies += "io.github.quelgar" %%% "scala-uv" % "0.0.1"
+```
 
 ## Current status
 

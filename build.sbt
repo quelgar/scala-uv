@@ -40,3 +40,10 @@ sonatypeCredentialHost := "s01.oss.sonatype.org"
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
 credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+
+licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+
+import xerial.sbt.Sonatype._
+sonatypeProjectHosting := Some(
+  GitHubHosting("quelgar", "scala-uv", "lodea@mac.com")
+)
