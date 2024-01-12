@@ -68,6 +68,24 @@ final class FileSpec {
   }
 
   @Test
+  def readNonExistentFileReturnsError() = {
+    val loop = uv_default_loop()
+    val result = UvUtils.FsReq
+      .use { openReq =>
+        uv_fs_open(
+          loop,
+          openReq,
+          c"i_do_not_exist.fake",
+          FileOpenFlags.O_RDONLY,
+          0,
+          null
+        )
+      }
+
+    assertEquals("error code", ErrorCodes.ENOENT, result)
+  }
+
+  @Test
   def writeNewFile(): Unit = {
     val text = "my country is the world, and my religion is to do good"
     val filename = "src/test/resources/write-test.txt"
