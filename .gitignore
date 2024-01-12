@@ -3,3 +3,7 @@
 /project/project
 sbt-launch.jar
 src/test/resources/write-test.txt
+/.bsp
+/.metals
+.vscode
+metals.sbt
