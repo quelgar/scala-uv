@@ -1,4 +1,5 @@
 package scalauv
+
 import org.junit.Test
 import org.junit.Assert.*
 import LibUv.*
@@ -9,42 +10,6 @@ import scala.scalanative.libc.stdlib
 final class TcpSpec {
 
   import TcpSpec.*
-
-  def recordReceived(s: String): Unit = {
-    receivedData = receivedData :+ s
-  }
-
-  def setFailed(msg: String): Unit = {
-    failed = Some(msg)
-  }
-
-  def onClose: CloseCallback = (h: Handle) => stdlib.free(h.toPtr)
-
-  def onRead: StreamReadCallback = {
-    (handle: StreamHandle, numRead: CSSize, buf: Buffer) =>
-      numRead match {
-        case ErrorCodes.EOF =>
-          uv_close(handle, onClose)
-        case code if code < 0 =>
-          uv_close(handle, onClose)
-          setFailed(UvUtils.errorMessage(code.toInt))
-        case _ =>
-          val (text, done) =
-            buf.asUtf8String(numRead.toInt).span(_ != DoneMarker)
-          recordReceived(text)
-          if done.nonEmpty then {
-            val listenHandle = Handle.unsafeFromPtr(uv_handle_get_data(handle))
-            uv_close(listenHandle, null)
-          }
-      }
-      stdlib.free(buf.base)
-  }
-
-  @Test
-  def foo(): Unit = {
-    println("XXXXXX")
-    assertEquals(1, 1)
-  }
 
   @Test
   def listen(): Unit = {
@@ -151,5 +116,35 @@ object TcpSpec {
 
   private var receivedData = Vector.empty[String]
   private var failed = Option.empty[String]
+
+  def recordReceived(s: String): Unit = {
+    receivedData = receivedData :+ s
+  }
+
+  def setFailed(msg: String): Unit = {
+    failed = Some(msg)
+  }
+
+  def onClose: CloseCallback = (h: Handle) => stdlib.free(h.toPtr)
+
+  def onRead: StreamReadCallback = {
+    (handle: StreamHandle, numRead: CSSize, buf: Buffer) =>
+      numRead match {
+        case ErrorCodes.EOF =>
+          uv_close(handle, onClose)
+        case code if code < 0 =>
+          uv_close(handle, onClose)
+          setFailed(UvUtils.errorMessage(code.toInt))
+        case _ =>
+          val (text, done) =
+            buf.asUtf8String(numRead.toInt).span(_ != DoneMarker)
+          recordReceived(text)
+          if done.nonEmpty then {
+            val listenHandle = Handle.unsafeFromPtr(uv_handle_get_data(handle))
+            uv_close(listenHandle, null)
+          }
+      }
+      stdlib.free(buf.base)
+  }
 
 }
