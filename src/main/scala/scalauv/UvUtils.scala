@@ -288,9 +288,11 @@ object Ip4Address {
 
 type Port = Int
 
-opaque type SocketAddressIp4 = Ptr[Byte]
+opaque type SocketAddress = Ptr[Byte]
 
-object SocketAddress4 {
+opaque type SocketAddressIp4 <: SocketAddress = Ptr[Byte]
+
+object SocketAddressIp4 {
 
   val size: CSize = helpers.uv_scala_sizeof_sockaddr_in()
 
@@ -332,3 +334,5 @@ extension (r: LibUv.ConnectReq) {
     helpers.uv_scala_connect_stream_handle(r)
 
 }
+
+opaque type AddrInfo = Ptr[Byte]

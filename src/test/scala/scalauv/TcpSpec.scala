@@ -84,7 +84,7 @@ final class TcpSpec {
       val port = 10000
       val serverTcpHandle = UvUtils.stackAllocateHandle(HandleType.UV_TCP)
       uv_tcp_init(loop, serverTcpHandle).checkErrorThrowIO()
-      val serverSocketAddress = SocketAddress4.unspecifiedAddress(port)
+      val serverSocketAddress = SocketAddressIp4.unspecifiedAddress(port)
       uv_tcp_bind(serverTcpHandle, serverSocketAddress, 0.toUInt)
         .checkErrorThrowIO()
       uv_listen(serverTcpHandle, 128, onNewConnection).checkErrorThrowIO()
@@ -122,7 +122,7 @@ final class TcpSpec {
 
       val clientTcpHandle = UvUtils.stackAllocateHandle(HandleType.UV_TCP)
       uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
-      val clientSocketAddress = SocketAddress4.loopbackAddress(port)
+      val clientSocketAddress = SocketAddressIp4.loopbackAddress(port)
       val connectReq = UvUtils.stackAllocateRequest(RequestType.CONNECT)
       uv_tcp_connect(
         connectReq,
