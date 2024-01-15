@@ -64,27 +64,21 @@ final class TcpSpec {
       def onNewConnection: ConnectionCallback = {
         (handle: StreamHandle, status: ErrorCode) =>
           val loop = uv_handle_get_loop(handle)
-          val attempt = for {
-            _ <- status.attempt.mapErrorMessage(s =>
-              s"New connection error: $s"
-            )
-            clientTcpHandle = UvUtils.mallocHandle(HandleType.UV_TCP)
-            _ <- Uv.onFail(stdlib.free(clientTcpHandle))
-            _ <- {
-              println("New connection")
-              uv_tcp_init(loop, clientTcpHandle).attempt
-                .mapErrorMessage(s => s"TCP handle init failed: $s")
-            }
-            _ <- Uv.succeed {
-              uv_handle_set_data(clientTcpHandle, handle)
-            }
-            _ <- uv_accept(handle, clientTcpHandle).attempt
-              .mapErrorMessage(s => s"Accept failed: $s")
-            _ <- Uv.onFail(uv_close(clientTcpHandle, onClose))
-            _ <- uv_read_start(clientTcpHandle, allocBuffer, onRead).attempt
-              .mapErrorMessage(s => s"Read start failed: $s")
-          } yield ()
-          attempt.foreachFailure(e => setFailed(e.message))
+          UvUtils.attemptCatch {
+            status.checkErrorThrowIO()
+            val clientTcpHandle = UvUtils.mallocHandle(HandleType.UV_TCP)
+            UvUtils.onFail(stdlib.free(clientTcpHandle))
+            println("New connection")
+            uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
+            uv_handle_set_data(clientTcpHandle, handle)
+            uv_accept(handle, clientTcpHandle).checkErrorThrowIO()
+            UvUtils.onFail(uv_close(clientTcpHandle, onClose))
+            uv_read_start(clientTcpHandle, allocBuffer, onRead)
+              .checkErrorThrowIO()
+            ()
+          } { exception =>
+            setFailed(exception.getMessage())
+          }
       }
 
       val port = 10000

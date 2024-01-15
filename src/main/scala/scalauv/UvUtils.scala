@@ -8,6 +8,8 @@ import java.io.IOException
 import scala.util.boundary
 import java.nio.charset.StandardCharsets
 import java.nio.charset.Charset
+import scala.util.control.NonFatal
+import scala.collection.mutable.Stack
 
 inline def withZone[A](f: Zone ?=> A): A = Zone(z => f(using z))
 
@@ -24,159 +26,6 @@ def mallocCString(
     !(cString + size) = 0.toByte
     cString
   }
-}
-
-/** Utility to help deal with errors returned by the libuv API. Constructor
-  * methods like `attempt` can be used the check the libuv return value,
-  * constructing a `Failure` case if it is < 0 and `Success` otherwise. As with
-  * `Either`, the `flatMap` does not continue if there is a failure. It is also
-  * possible to register callbacks to be run if there is a failure, using
-  * methods like `onFail`.
-  */
-enum Uv[+A] {
-
-  case Success(onFailActions: Vector[Uv.Error => Unit], result: A) extends Uv[A]
-  case Failure(error: Uv.Error) extends Uv[Nothing]
-
-  def errorMessage: Option[String] = this match {
-    case Success(_, _) =>
-      None
-    case Failure(error) =>
-      Some(error.message)
-  }
-
-  def map[B](f: A => B): Uv[B] = this match {
-    case Success(onFailActions, result) =>
-      Success(onFailActions, f(result))
-    case Failure(error) =>
-      Failure(error)
-  }
-
-  def flatMap[B](f: A => Uv[B]): Uv[B] = this match {
-    case Success(onFailActions, result) =>
-      f(result) match {
-        case Success(onFailActions2, result2) =>
-          Success(onFailActions2 ++ onFailActions, result2)
-        case Failure(error) =>
-          onFailActions.foreach(_(error))
-          Failure(error)
-      }
-    case Failure(error) =>
-      Failure(error)
-  }
-
-  def foreach(f: A => Unit): Unit = this match {
-    case Success(_, result) =>
-      f(result)
-    case Failure(_) =>
-      ()
-  }
-
-  def as[B](b: B): Uv[B] = this match {
-    case Success(onFailActions, _) =>
-      Success(onFailActions, b)
-    case Failure(error) =>
-      Failure(error)
-  }
-
-  def mapErrorMessage(f: String => String): Uv[A] = this match {
-    case s @ Success(_, _) =>
-      s
-    case Failure(error) =>
-      Failure(error.copy(message = f(error.message)))
-  }
-
-  def onFailError(f: Uv.Error => Unit): Uv[A] = this match {
-    case Success(onFailActions, result) =>
-      Success(f +: onFailActions, result)
-    case Failure(error) =>
-      f(error)
-      this
-  }
-
-  def onFail(f: => Unit): Uv[A] = onFailError(_ => f)
-
-  def toEither: Either[Uv.Error, A] = this match {
-    case Success(_, result) =>
-      Right(result)
-    case Failure(error) =>
-      Left(error)
-  }
-
-  def eitherMessage: Either[String, A] = this match {
-    case Success(_, result) =>
-      Right(result)
-    case Failure(error) =>
-      Left(error.message)
-  }
-
-  def fold[B](onFail: Uv.Error => B, onSuccess: A => B): B = this match {
-    case Success(_, result) =>
-      onSuccess(result)
-    case Failure(error) =>
-      onFail(error)
-  }
-
-  def foreachFailure(f: Uv.Error => Unit): Unit = this match {
-    case Success(_, _) =>
-      ()
-    case Failure(error) =>
-      f(error)
-  }
-
-  def isSuccess: Boolean = this match {
-    case Success(_, _) =>
-      true
-    case Failure(_) =>
-      false
-  }
-
-  def isFailure: Boolean = !isSuccess
-
-  def toOption: Option[A] = this match {
-    case Success(_, result) =>
-      Some(result)
-    case Failure(_) =>
-      None
-  }
-
-}
-
-object Uv {
-
-  final case class Error(errorCode: ErrorCode, message: String) {
-
-    def errorName: String = UvUtils.errorName(errorCode)
-
-  }
-
-  object Error {
-
-    def forCode(errorCode: ErrorCode): Error =
-      Error(errorCode, UvUtils.errorMessage(errorCode))
-
-  }
-
-  def succeed[A](a: A): Uv[A] = Success(Vector.empty, a)
-
-  def unit: Uv[Unit] = succeed(())
-
-  def fail(errorCode: ErrorCode): Uv[Nothing] = Failure(
-    Error.forCode(errorCode)
-  )
-
-  def checkError[A](errorCode: ErrorCode, a: A): Uv[A] =
-    if errorCode < 0 then Failure(Error.forCode(errorCode))
-    else succeed(a)
-
-  def attempt(errorCode: ErrorCode): Uv[ErrorCode] =
-    if errorCode < 0 then fail(errorCode)
-    else succeed(errorCode)
-
-  def onFailError(f: Error => Unit): Uv[Unit] = Success(Vector(f), ())
-
-  def onFail(f: => Unit): Uv[Unit] = onFailError(_ => f)
-
 }
 
 object UvUtils {
@@ -227,7 +76,7 @@ object UvUtils {
 
   private val ErrorCodeNameMax: CSize = 80.toUInt
 
-  def errorName(errorCode: CInt): String = {
+  inline def errorName(errorCode: CInt): String = {
     val cString = stackalloc[Byte](ErrorCodeNameMax)
     LibUv.uv_err_name_r(errorCode, cString, ErrorCodeNameMax)
     fromCString(cString)
@@ -235,7 +84,7 @@ object UvUtils {
 
   private val ErrorCodeMessageMex: CSize = 200.toUInt
 
-  def errorMessage(errorCode: ErrorCode): String = withZone {
+  inline def errorMessage(errorCode: ErrorCode): String = withZone {
     val cString = alloc[Byte](ErrorCodeMessageMex)
     LibUv.uv_strerror_r(errorCode, cString, ErrorCodeMessageMex)
     fromCString(cString)
@@ -250,15 +99,15 @@ object UvUtils {
     s"UV error $name: $message"
   }
 
-  def checkError[A](result: ErrorCode)(
+  inline def mapError[A](result: ErrorCode)(
       handleError: CInt => A
   ): Either[A, CInt] =
     if result < 0 then Left(handleError(result)) else Right(result)
 
-  def checkErrorThrow(result: ErrorCode)(f: String => Exception): CInt =
+  inline def checkErrorThrow(result: ErrorCode)(f: String => Exception): CInt =
     if result < 0 then throw f(errorNameAndMessage(result)) else result
 
-  def checkErrorThrowIO(result: ErrorCode): CInt =
+  inline def checkErrorThrowIO(result: ErrorCode): CInt =
     checkErrorThrow(result)(new IOException(_))
 
   def checkErrorEofThrow(
@@ -270,45 +119,88 @@ object UvUtils {
       case success                        => Some(success)
     }
 
-  def withMutex[A](mutex: Mutex)(f: => A): A = {
+  inline def withMutex[A](mutex: Mutex)(f: => A): A = {
     uv_mutex_lock(mutex)
     try f
     finally uv_mutex_unlock(mutex)
   }
 
+  final class Cleanup private[UvUtils] () {
+
+    private val onCompleteActions = Stack.empty[Option[Throwable] => Unit]
+
+    private[UvUtils] inline def addOnErrorAction(f: Throwable => Unit): Unit =
+      onCompleteActions.push(_.foreach(f))
+
+    private[UvUtils] inline def addOnCompleteAction(
+        f: Option[Throwable] => Unit
+    ): Unit =
+      onCompleteActions.push(f)
+
+    private[UvUtils] inline def completed(
+        maybeFailure: Option[Throwable]
+    ): Unit =
+      onCompleteActions.popAll().foreach(_(maybeFailure))
+
+  }
+
+  def attemptCatch[A](f: Cleanup ?=> A)(handleError: Throwable => A): A = {
+    given cleanup: Cleanup = Cleanup()
+    try f
+    catch {
+      case NonFatal(t) =>
+        cleanup.completed(Some(t))
+        handleError(t)
+    } finally cleanup.completed(None)
+  }
+
+  def attempt[A](f: Cleanup ?=> A): A = {
+    given cleanup: Cleanup = Cleanup()
+    try f
+    catch {
+      case NonFatal(t) =>
+        cleanup.completed(Some(t))
+        throw t
+    } finally cleanup.completed(None)
+  }
+
+  inline def onFailWith(f: Throwable => Unit)(using cleanup: Cleanup): Unit =
+    cleanup.addOnErrorAction(f)
+
+  inline def onFail(f: => Unit)(using Cleanup): Unit =
+    onFailWith(_ => f)
+
+  inline def onComplete(f: => Unit)(using cleanup: Cleanup): Unit =
+    cleanup.addOnCompleteAction(_ => f)
+
 }
 
 extension (uvResult: CInt) {
 
-  def checkError[A](handleError: CInt => A): Either[A, CInt] =
-    UvUtils.checkError(uvResult)(handleError)
+  inline def mapError[A](handleError: CInt => A): Either[A, CInt] =
+    UvUtils.mapError(uvResult)(handleError)
 
-  def checkErrorThrow(f: String => Exception): CInt =
+  inline def mapErrorMessage: Either[String, CInt] =
+    mapError(UvUtils.errorMessage(_))
+
+  inline def checkErrorThrow(f: String => Exception): CInt =
     UvUtils.checkErrorThrow(uvResult)(f)
 
-  def checkErrorThrowIO(): CInt =
+  inline def checkErrorThrowIO(): CInt =
     UvUtils.checkErrorThrowIO(uvResult)
 
-  def checkErrorMessage: Either[String, CInt] =
-    checkError(UvUtils.errorMessage)
-
-  def checkCustomErrorMessage(f: String => String): Either[String, CInt] =
-    checkError(code => f(UvUtils.errorMessage(code)))
-
-  def attempt: Uv[ErrorCode] = Uv.attempt(uvResult)
-
-  def ifSuccess[A](a: => A): Uv[A] =
-    if uvResult < 0 then Uv.fail(uvResult) else Uv.succeed(a)
-
-  def onFail(f: => Unit): CInt = {
+  inline def onFail(f: => Unit): CInt = {
     if uvResult < 0 then f
     uvResult
   }
 
-  def onFailMessage(f: String => Unit): CInt = {
+  inline def onFailMessage(f: String => Unit): CInt = {
     if uvResult < 0 then f(UvUtils.errorMessage(uvResult))
     uvResult
   }
+
+  inline def successAs[A](v: => A): Either[CInt, A] =
+    if uvResult < 0 then Left(uvResult) else Right(v)
 
 }
 
@@ -416,12 +308,12 @@ object SocketAddress4 {
   inline def fromString(
       ip: String,
       port: Port
-  ): Uv[SocketAddressIp4] = withZone {
+  ): Either[ErrorCode, SocketAddressIp4] = withZone {
     val cString = toCString(ip)
     val sockaddr = stackalloc[Byte](size).asInstanceOf[SocketAddressIp4]
     LibUv
       .uv_ip4_addr(cString, port, sockaddr)
-      .ifSuccess(sockaddr)
+      .successAs(sockaddr)
   }
 
   inline def unspecifiedAddress(port: Port): SocketAddressIp4 =
