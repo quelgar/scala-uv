@@ -1,5 +1,6 @@
 #include <uv.h>
 #include <netinet/in.h>
+#include <string.h>
 
 void uv_scala_buf_init(char *base, unsigned int len, uv_buf_t *buffer)
 {
