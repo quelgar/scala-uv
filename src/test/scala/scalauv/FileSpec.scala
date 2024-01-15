@@ -25,7 +25,7 @@ final class FileSpec {
 
       val buffer = alloc[Byte](BufSize)
 
-      val readFileHandle = UvUtils.FsReq
+      val readFileHandle = FileReq
         .use { openReq =>
           uv_fs_open(
             loop,
@@ -38,7 +38,7 @@ final class FileSpec {
         }
         .checkErrorThrowIO()
 
-      val bytesRead = UvUtils.FsReq
+      val bytesRead = FileReq
         .use { readReq =>
           val iov = IOVector.stackAllocateForBuffer(buffer, BufSize.toUInt)
           uv_fs_read(
@@ -55,7 +55,7 @@ final class FileSpec {
 
       val readText = fromCString(buffer, StandardCharsets.UTF_8)
 
-      UvUtils.FsReq
+      FileReq
         .use { closeReq =>
           uv_fs_close(loop, closeReq, readFileHandle, null)
         }
@@ -70,7 +70,7 @@ final class FileSpec {
   @Test
   def readNonExistentFileReturnsError() = {
     val loop = uv_default_loop()
-    val result = UvUtils.FsReq
+    val result = FileReq
       .use { openReq =>
         uv_fs_open(
           loop,
@@ -96,7 +96,7 @@ final class FileSpec {
       val cText = toCString(text, StandardCharsets.UTF_8)
       val cFilename = toCString(filename, StandardCharsets.UTF_8)
 
-      val fileHandle = UvUtils.FsReq
+      val fileHandle = FileReq
         .use { openReq =>
           uv_fs_open(
             loop,
@@ -109,7 +109,7 @@ final class FileSpec {
         }
         .checkErrorThrowIO()
 
-      val bytesWritten = UvUtils.FsReq
+      val bytesWritten = FileReq
         .use { writeReq =>
           val iov =
             IOVector.stackAllocateForBuffer(cText, string.strlen(cText).toUInt)
@@ -125,7 +125,7 @@ final class FileSpec {
         }
         .checkErrorThrowIO()
 
-      UvUtils.FsReq
+      FileReq
         .use { closeReq =>
           uv_fs_close(loop, closeReq, fileHandle, null)
         }

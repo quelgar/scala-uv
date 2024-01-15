@@ -30,7 +30,8 @@ scalacOptions ++= Seq(
   "-Wvalue-discard",
   "-Wunused:all",
   "-Werror",
-  "-deprecation"
+  "-deprecation",
+  "-explain"
 )
 
 publishTo := sonatypePublishToBundle.value

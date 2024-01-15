@@ -1,7 +1,8 @@
 package scalauv
 
 import scala.scalanative.unsafe.*
-import LibUv.ErrorCode
+
+type ErrorCode = CInt
 
 object ErrorCodes {
 

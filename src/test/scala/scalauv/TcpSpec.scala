@@ -18,7 +18,7 @@ final class TcpSpec {
     failed = Some(msg)
   }
 
-  def onClose: CloseCallback = stdlib.free
+  def onClose: CloseCallback = (h: Handle) => stdlib.free(h.toPtr)
 
   def onRead: StreamReadCallback = {
     (handle: StreamHandle, numRead: CSSize, buf: Buffer) =>
@@ -33,7 +33,7 @@ final class TcpSpec {
             buf.asUtf8String(numRead.toInt).span(_ != DoneMarker)
           recordReceived(text)
           if done.nonEmpty then {
-            val listenHandle = uv_handle_get_data(handle)
+            val listenHandle = Handle.unsafeFromPtr(uv_handle_get_data(handle))
             uv_close(listenHandle, null)
           }
       }
@@ -57,7 +57,7 @@ final class TcpSpec {
       uv_loop_init(loop).checkErrorThrowIO()
 
       def allocBuffer: AllocCallback = {
-        (handle: StreamHandle, suggestedSize: CSize, buf: Buffer) =>
+        (handle: Handle, suggestedSize: CSize, buf: Buffer) =>
           buf.mallocInit(suggestedSize)
       }
 
@@ -66,11 +66,11 @@ final class TcpSpec {
           val loop = uv_handle_get_loop(handle)
           UvUtils.attemptCatch {
             status.checkErrorThrowIO()
-            val clientTcpHandle = UvUtils.mallocHandle(HandleType.UV_TCP)
-            UvUtils.onFail(stdlib.free(clientTcpHandle))
+            val clientTcpHandle = TcpHandle.malloc()
+            UvUtils.onFail(clientTcpHandle.free())
             println("New connection")
             uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
-            uv_handle_set_data(clientTcpHandle, handle)
+            uv_handle_set_data(clientTcpHandle, handle.toPtr)
             uv_accept(handle, clientTcpHandle).checkErrorThrowIO()
             UvUtils.onFail(uv_close(clientTcpHandle, onClose))
             uv_read_start(clientTcpHandle, allocBuffer, onRead)
@@ -82,7 +82,7 @@ final class TcpSpec {
       }
 
       val port = 10000
-      val serverTcpHandle = UvUtils.stackAllocateHandle(HandleType.UV_TCP)
+      val serverTcpHandle = TcpHandle.stackAllocate()
       uv_tcp_init(loop, serverTcpHandle).checkErrorThrowIO()
       val serverSocketAddress = SocketAddressIp4.unspecifiedAddress(port)
       uv_tcp_bind(serverTcpHandle, serverSocketAddress, 0.toUInt)
@@ -91,25 +91,25 @@ final class TcpSpec {
 
       def onWrite: StreamWriteCallback = { (req: WriteReq, status: ErrorCode) =>
         status.onFailMessage(setFailed)
-        val buf = Buffer.unsafeFromNative(uv_req_get_data(req))
+        val buf = Buffer.unsafeFromPtr(uv_req_get_data(req))
         stdlib.free(buf.base)
         buf.free()
-        stdlib.free(req)
+        req.free()
       }
 
       def onConnect: ConnectCallback = { (req: ConnectReq, status: ErrorCode) =>
         status.onFailMessage(setFailed)
         val stream = req.connectReqStreamHandle
         def doWrite(text: String) = {
-          val writeReq = UvUtils.mallocRequest(RequestType.WRITE)
+          val writeReq = WriteReq.malloc()
           val cText = mallocCString(text)
           val buf = Buffer.malloc(cText, text.length.toULong)
-          uv_req_set_data(writeReq, buf.toNative)
+          uv_req_set_data(writeReq, buf.toPtr)
           uv_write(writeReq, stream, buf, 1.toUInt, onWrite).onFailMessage {
             s =>
               stdlib.free(cText)
               buf.free()
-              stdlib.free(writeReq)
+              writeReq.free()
               setFailed(s)
           }
         }
@@ -120,10 +120,10 @@ final class TcpSpec {
         ()
       }
 
-      val clientTcpHandle = UvUtils.stackAllocateHandle(HandleType.UV_TCP)
+      val clientTcpHandle = TcpHandle.stackAllocate()
       uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
       val clientSocketAddress = SocketAddressIp4.loopbackAddress(port)
-      val connectReq = UvUtils.stackAllocateRequest(RequestType.CONNECT)
+      val connectReq = ConnectReq.stackAllocate()
       uv_tcp_connect(
         connectReq,
         clientTcpHandle,

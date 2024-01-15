@@ -21,7 +21,7 @@ final class Test {
 
       val loop = uv_default_loop()
 
-      val asyncHandle = UvUtils.zoneAllocateHandle(HandleType.UV_ASYNC)
+      val asyncHandle = AsyncHandle.zoneAllocate()
       uv_async_init(loop, asyncHandle, callback).checkErrorThrowIO()
 
       uv_async_send(asyncHandle).checkErrorThrowIO()
@@ -52,7 +52,7 @@ object Main {
     withZone {
       val loop = uv_default_loop()
 
-      val asyncHandle = UvUtils.zoneAllocateHandle(HandleType.UV_ASYNC)
+      val asyncHandle = AsyncHandle.zoneAllocate()
       uv_async_init(loop, asyncHandle, callback).checkErrorThrowIO()
 
       uv_async_send(asyncHandle).checkErrorThrowIO()

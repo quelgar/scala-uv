@@ -2,18 +2,14 @@ package scalauv
 
 import scala.scalanative.unsafe.*
 
+opaque type Loop = Ptr[Byte]
+
 @link("uv")
 @extern
 object LibUv {
 
-  type ErrorCode = CInt
-
   // =========================================================
   // Event loop
-
-  type Loop = Ptr[Byte]
-
-  type RunMode = CInt
 
   type WalkCallback = CFuncPtr2[Handle, Ptr[Byte], Unit]
 
@@ -55,10 +51,6 @@ object LibUv {
   // =========================================================
   // Base handle
 
-  type Handle = Ptr[Byte]
-
-  type HandleType = CInt
-
   type AllocCallback = CFuncPtr3[Handle, CSize, Buffer, Unit]
 
   type CloseCallback = CFuncPtr1[Handle, Unit]
@@ -97,10 +89,6 @@ object LibUv {
   // =========================================================
   // Base request
 
-  type RequestType = CInt
-
-  type Req = Ptr[Byte]
-
   def uv_cancel(req: Req): ErrorCode = extern
 
   def uv_req_size(req_type: RequestType): CSize = extern
@@ -115,8 +103,6 @@ object LibUv {
 
   // =========================================================
   // Timer handle
-
-  type TimerHandle = Handle
 
   type TimerCallback = CFuncPtr1[TimerHandle, Unit]
 
@@ -146,8 +132,6 @@ object LibUv {
   // =========================================================
   // Prepare handle
 
-  type PrepareHandle = Handle
-
   type PrepareCallback = CFuncPtr1[PrepareHandle, Unit]
 
   def uv_prepare_init(loop: Loop, handle: PrepareHandle): ErrorCode = extern
@@ -162,8 +146,6 @@ object LibUv {
   // =========================================================
   // Check handle
 
-  type CheckHandle = Handle
-
   type CheckCallback = CFuncPtr1[CheckHandle, Unit]
 
   def uv_check_init(loop: Loop, handle: CheckHandle): ErrorCode = extern
@@ -176,8 +158,6 @@ object LibUv {
   // =========================================================
   // Idle handle
 
-  type IdleHandle = Handle
-
   type IdleCallback = CFuncPtr1[IdleHandle, Unit]
 
   def uv_idle_init(loop: Loop, handle: IdleHandle): ErrorCode = extern
@@ -189,8 +169,6 @@ object LibUv {
 
   // =========================================================
   // Async handle
-
-  type AsyncHandle = Handle
 
   type AsyncCallback = CFuncPtr1[AsyncHandle, Unit]
 
@@ -205,11 +183,7 @@ object LibUv {
   // =========================================================
   // Poll handle
 
-  type PollHandle = Handle
-
   type PollCallback = CFuncPtr3[PollHandle, ErrorCode, CInt, Unit]
-
-  type PollEvent = CInt
 
   def uv_poll_init(loop: Loop, handle: PollHandle, fd: CInt): ErrorCode =
     extern
@@ -231,8 +205,6 @@ object LibUv {
 
   // =========================================================
   // Signal handle
-
-  type SignalHandle = Handle
 
   type SignalCallback = CFuncPtr2[SignalHandle, CInt, Unit]
 
@@ -286,14 +258,6 @@ object LibUv {
 
   // =========================================================
   // Stream handle
-
-  type StreamHandle = Ptr[Byte]
-
-  type ConnectReq = Req
-
-  type ShutdownReq = Req
-
-  type WriteReq = Req
 
   type StreamReadCallback = CFuncPtr3[StreamHandle, CSSize, Buffer, Unit]
 
@@ -372,8 +336,6 @@ object LibUv {
   // =========================================================
   // TCP handle
 
-  type TcpHandle = Handle
-
   def uv_tcp_init(loop: Loop, handle: TcpHandle): ErrorCode = extern
 
   def uv_tcp_init_ex(
@@ -434,8 +396,6 @@ object LibUv {
 
   // =========================================================
   // Pipe handle
-
-  type PipeHandle = Handle
 
   def uv_pipe_init(
       loop: Loop,
@@ -508,12 +468,6 @@ object LibUv {
   // =========================================================
   // TTY handle
 
-  type TtyHandle = Handle
-
-  type TtyMode = CInt
-
-  type TtyVtermState = CInt
-
   def uv_tty_init(
       loop: Loop,
       handle: TtyHandle,
@@ -538,18 +492,10 @@ object LibUv {
   // =========================================================
   // UDP handle
 
-  type UdpHandle = Handle
-
-  type UdpSendReq = Req
-
-  type UdpFlags = CInt
-
   type UdpSendCallback = CFuncPtr2[UdpSendReq, ErrorCode, Unit]
 
   type UdpRecvCallback =
     CFuncPtr5[UdpHandle, CSSize, Buffer, SocketAddress, CUnsignedInt, Unit]
-
-  type Membership = CInt
 
   def uv_udp_init(loop: Loop, handle: UdpHandle): ErrorCode = extern
 
@@ -649,8 +595,6 @@ object LibUv {
   // =========================================================
   // FS Event handle
 
-  type FsEventHandle = Handle
-
   type FsEventCallback = CFuncPtr4[
     FsEventHandle,
     CString,
@@ -658,10 +602,6 @@ object LibUv {
     CInt,
     Unit
   ]
-
-  type FsEvent = CInt
-
-  type FsEventFlags = CInt
 
   def uv_fs_event_init(
       loop: Loop,
@@ -685,8 +625,6 @@ object LibUv {
 
   // =========================================================
   // FS Poll handle
-
-  type FsPollHandle = Handle
 
   type FsPollCallback = CFuncPtr4[FsPollHandle, ErrorCode, Stat, Stat, Unit]
 
@@ -713,8 +651,6 @@ object LibUv {
   // =========================================================
   // File system operations
 
-  type FileReq = Req
-
   type TimeSpec = Ptr[CStruct2[CLong, CLong]]
 
   type Stat = Ptr[CStruct16[
@@ -736,8 +672,6 @@ object LibUv {
     TimeSpec
   ]]
 
-  type FsType = CInt
-
   type StatFs = Ptr[CStruct11[
     CUnsignedLongLong,
     CUnsignedLongLong,
@@ -751,8 +685,6 @@ object LibUv {
     CUnsignedLongLong,
     CUnsignedLongLong
   ]]
-
-  type DirEntType = CInt
 
   type DirEnt = Ptr[CStruct2[CString, DirEntType]]
 
@@ -1074,15 +1006,13 @@ object LibUv {
   // =========================================================
   // Thread pool work scheduling
 
-  type Work = Req
+  type WorkCallback = CFuncPtr1[WorkReq, Unit]
 
-  type WorkCallback = CFuncPtr1[Work, Unit]
-
-  type AfterWorkCallback = CFuncPtr2[Work, ErrorCode, Unit]
+  type AfterWorkCallback = CFuncPtr2[WorkReq, ErrorCode, Unit]
 
   def uv_queue_work(
       loop: Loop,
-      req: Work,
+      req: WorkReq,
       work_cb: WorkCallback,
       after_work_cb: AfterWorkCallback
   ): ErrorCode = extern
@@ -1126,23 +1056,7 @@ object LibUv {
   // =========================================================
   // Threading and synchronization utilities
 
-  type Thread = Ptr[Byte]
-
   type ThreadCallback = CFuncPtr1[Thread, Unit]
-
-  type ThreadLocalKey = Ptr[Byte]
-
-  type OnceOnly = Ptr[Byte]
-
-  type Mutex = Ptr[Byte]
-
-  type ReadWriteLock = Ptr[Byte]
-
-  type Semaphore = Ptr[Byte]
-
-  type Condition = Ptr[Byte]
-
-  type Barrier = Ptr[Byte]
 
   def uv_mutex_init(mutex: Mutex): ErrorCode = extern
 
@@ -1159,8 +1073,6 @@ object LibUv {
   // =========================================================
   // Miscellaneous utlities
 
-  type FileHandle = CInt
-
   // TODO: 32bit on Unix, 64bit on Windows
 //   type OsSocketHandle = Nothing
 
@@ -1174,8 +1086,6 @@ object LibUv {
   type TimeVal64 = Ptr[CStruct2[Long, Int]]
 
   type TimeSpec64 = Ptr[CStruct2[Long, Int]]
-
-  type Clock = CInt
 
   def uv_strerror_r(err: CInt, buf: CString, buflen: CSize): CString = extern
 
@@ -1208,56 +1118,5 @@ object LibUv {
       dst: CString,
       size: CSize
   ): ErrorCode = extern
-
-}
-
-@extern
-private[scalauv] object helpers {
-
-  def uv_scala_buf_init(
-      base: Ptr[CChar],
-      len: CUnsignedInt,
-      buffer: Ptr[Byte]
-  ): Unit = extern
-
-  def uv_scala_buf_base(buffer: Ptr[Byte]): Ptr[Byte] = extern
-
-  def uv_scala_buf_len(buffer: Ptr[Byte]): CSize = extern
-
-  def uv_scala_buf_struct_size(): CSize = extern
-
-  def uv_scala_mutex_t_size(): CSize = extern
-
-  def uv_scala_connect_stream_handle(
-      req: LibUv.ConnectReq
-  ): LibUv.StreamHandle =
-    extern
-
-  def uv_scala_shutdown_stream_handle(req: LibUv.Req): LibUv.StreamHandle =
-    extern
-
-  def uv_scala_write_stream_handle(req: LibUv.Req): LibUv.StreamHandle = extern
-
-  def uv_scala_send_stream_handle(req: LibUv.Req): LibUv.StreamHandle = extern
-
-  def uv_scala_sizeof_sockaddr_in(): CSize = extern
-
-  def uv_scala_init_sockaddr_in(
-      address: CInt,
-      port: CInt,
-      socketAddress: SocketAddressIp4
-  ): Unit =
-    extern
-
-  def uv_scala_sizeof_sockaddr_in6(): CSize = extern
-
-  def uv_scala_init_sockaddr_in6(
-      address: Ptr[Byte],
-      port: CInt,
-      flowInfo: CUnsignedInt,
-      scopeId: CUnsignedInt,
-      socketAddress: SocketAddressIp6
-  ): Unit =
-    extern
 
 }

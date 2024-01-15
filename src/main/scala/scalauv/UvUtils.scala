@@ -5,7 +5,6 @@ import scala.scalanative.unsafe.*
 import scala.scalanative.libc.*
 import scala.scalanative.unsigned.*
 import java.io.IOException
-import scala.util.boundary
 import java.nio.charset.StandardCharsets
 import java.nio.charset.Charset
 import scala.util.control.NonFatal
@@ -30,50 +29,6 @@ def mallocCString(
 
 object UvUtils {
 
-  /** Allocate the specified type of request on the stack.
-    *
-    * *Note:* this is generally only safe to use for synchronous calls.
-    *
-    * @param requestType
-    *   The type of request to allocate.
-    * @return
-    *   The new request.
-    */
-  inline def stackAllocateRequest(requestType: RequestType): Req =
-    stackalloc[Byte](uv_req_size(requestType))
-
-  inline def zoneAllocateRequest(requestType: RequestType)(using Zone): Req =
-    alloc[Byte](uv_req_size(requestType))
-
-  inline def mallocRequest(requestType: RequestType): Req =
-    stdlib.malloc(uv_req_size(requestType)).asInstanceOf[Req]
-
-  object FsReq {
-
-    /** Allocate a new FS request, provide it to the specified function, and
-      * clean it up after the function returns. Note this is only safe to use
-      * for **blocking** FS operations.
-      *
-      * @param f
-      *   A function that performs **blocking** FS operations.
-      */
-    inline def use[A](inline f: Req => A): A = {
-      val req = stackAllocateRequest(RequestType.FS)
-      try f(req)
-      finally uv_fs_req_cleanup(req)
-    }
-
-  }
-
-  inline def stackAllocateHandle(handleType: HandleType): Handle =
-    stackalloc[Byte](uv_handle_size(handleType))
-
-  inline def zoneAllocateHandle(handleType: HandleType)(using Zone): Handle =
-    alloc[Byte](uv_handle_size(handleType))
-
-  inline def mallocHandle(handleType: HandleType): Handle =
-    stdlib.malloc(uv_handle_size(handleType)).asInstanceOf[Handle]
-
   private val ErrorCodeNameMax: CSize = 80.toUInt
 
   inline def errorName(errorCode: CInt): String = {
@@ -90,7 +45,7 @@ object UvUtils {
     fromCString(cString)
   }
 
-  def errorNameAndMessage(errorCode: LibUv.ErrorCode): String = withZone {
+  def errorNameAndMessage(errorCode: ErrorCode): String = withZone {
     val cString = alloc[Byte](ErrorCodeMessageMex)
     LibUv.uv_err_name_r(errorCode, cString, ErrorCodeMessageMex)
     val name = fromCString(cString)
@@ -118,12 +73,6 @@ object UvUtils {
       case error if error < 0             => throw f(errorNameAndMessage(error))
       case success                        => Some(success)
     }
-
-  inline def withMutex[A](mutex: Mutex)(f: => A): A = {
-    uv_mutex_lock(mutex)
-    try f
-    finally uv_mutex_unlock(mutex)
-  }
 
   final class Cleanup private[UvUtils] () {
 
@@ -204,70 +153,6 @@ extension (uvResult: CInt) {
 
 }
 
-final class IOVector(val nativeBuffers: Buffer, numberOfBuffers: Int) {
-
-  inline def apply(index: Int): Buffer = {
-    nativeBuffers + index
-  }
-
-  inline def foreachBuffer(f: Buffer => Unit): Unit =
-    for index <- 0 until numberOfBuffers do {
-      f(apply(index))
-    }
-
-  def foreachBufferMax(max: Int)(f: Buffer => Unit): Unit = {
-    var remaining = max
-    boundary {
-      for index <- 0 until numberOfBuffers do {
-        val buf = apply(index)
-        val length = scala.math.min(buf.length, remaining)
-        f(buf)
-        remaining -= length
-        assert(remaining >= 0)
-        if remaining == 0 then boundary.break()
-      }
-    }
-  }
-
-  inline def nativeNumBuffers: CUnsignedInt = numberOfBuffers.toUInt
-
-}
-
-object IOVector {
-
-  inline def stackAllocateForBuffer(
-      ptr: Ptr[Byte],
-      size: CUnsignedInt
-  ): IOVector = {
-    val buffer = Buffer.stackAllocate(ptr, size)
-    IOVector(buffer, 1)
-  }
-
-  inline def stackAllocateForBuffers(
-      buffers: Seq[(Ptr[Byte], CUnsignedInt)]
-  ): IOVector = {
-    val uvBufs =
-      stackalloc[Byte](buffers.size.toUInt * Buffer.structureSize)
-        .asInstanceOf[Buffer]
-    buffers.zipWithIndex.foreach { case ((ptr, size), index) =>
-      (uvBufs + index).init(ptr, size)
-    }
-    IOVector(uvBufs, buffers.size)
-  }
-
-  def zoneAllocate(bufferSizes: Int*)(using Zone): IOVector = {
-    val uvBufs =
-      alloc[Byte](bufferSizes.size.toUInt * Buffer.structureSize)
-        .asInstanceOf[Buffer]
-    bufferSizes.zipWithIndex.foreach { case (size, index) =>
-      val base = alloc[Byte](size)
-      (uvBufs + index).init(base, size.toUInt)
-    }
-    IOVector(uvBufs, bufferSizes.size)
-  }
-
-}
-
 type Ip4Address = Int
 
 object Ip4Address {
@@ -326,13 +211,6 @@ object SocketAddressIp4 {
 
 }
 
-opaque type SocketAddressIp6 = Ptr[Byte]
-
-extension (r: LibUv.ConnectReq) {
-
-  inline def connectReqStreamHandle: LibUv.StreamHandle =
-    helpers.uv_scala_connect_stream_handle(r)
-
-}
+opaque type SocketAddressIp6 <: SocketAddress = Ptr[Byte]
 
 opaque type AddrInfo = Ptr[Byte]

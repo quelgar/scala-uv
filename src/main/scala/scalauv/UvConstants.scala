@@ -1,50 +1,15 @@
 package scalauv
 
-import LibUv.*
 import scala.scalanative.unsafe.*
 
 type UvBufferSize = Nat.Digit2[Nat._1, Nat._6]
 
-object HandleType {
-  val UV_UNKNOWN_HANDLE: HandleType = 0
-  val UV_ASYNC: HandleType = 1
-  val UV_CHECK: HandleType = 2
-  val UV_FS_EVENT: HandleType = 3
-  val UV_FS_POLL: HandleType = 4
-  val UV_HANDLE: HandleType = 5
-  val UV_IDLE: HandleType = 6
-  val UV_NAMED_PIPE: HandleType = 7
-  val UV_POLL: HandleType = 8
-  val UV_PREPARE: HandleType = 9
-  val UV_PROCESS: HandleType = 10
-  val UV_STREAM: HandleType = 11
-  val UV_TCP: HandleType = 12
-  val UV_TIMER: HandleType = 13
-  val UV_TTY: HandleType = 14
-  val UV_UDP: HandleType = 15
-  val UV_SIGNAL: HandleType = 16
-  val UV_FILE: HandleType = 17
-  val UV_HANDLE_TYPE_MAX: HandleType = 18
-}
+opaque type RunMode = CInt
 
 object RunMode {
   val DEFAULT: RunMode = 0
   val ONCE: RunMode = 1
   val NOWAIT: RunMode = 2
-}
-
-object RequestType {
-  val UNKNOWN_REQ: RequestType = 0
-  val REQ: RequestType = 1
-  val CONNECT: RequestType = 2
-  val WRITE: RequestType = 3
-  val SHUTDOWN: RequestType = 4
-  val UDP_SEND: RequestType = 5
-  val FS: RequestType = 6
-  val WORK: RequestType = 7
-  val GETADDRINFO: RequestType = 8
-  val GETNAMEINFO: RequestType = 9
-  val REQ_TYPE_MAX: RequestType = 10
 }
 
 object FileOpenFlags {
@@ -79,12 +44,14 @@ object AccessCheckMode {
 
 }
 
+opaque type PollEvent = CInt
+
 object PollEvent {
 
-  val UV_READABLE = 1
-  val UV_WRITABLE = 2
-  val UV_DISCONNECT = 4
-  val UV_PRIORITIZED = 8
+  val UV_READABLE: PollEvent = 1
+  val UV_WRITABLE: PollEvent = 2
+  val UV_DISCONNECT: PollEvent = 4
+  val UV_PRIORITIZED: PollEvent = 8
 
 }
 
@@ -112,113 +79,131 @@ object StdioFlags {
 
 }
 
+opaque type TtyMode = CInt
+
 object TtyMode {
 
-  val UV_TTY_MODE_NORMAL = 0
-  val UV_TTY_MODE_RAW = 1
-  val UV_TTY_MODE_IO = 2
+  val UV_TTY_MODE_NORMAL: TtyMode = 0
+  val UV_TTY_MODE_RAW: TtyMode = 1
+  val UV_TTY_MODE_IO: TtyMode = 2
 
 }
+
+opaque type TtyVtermState = CInt
 
 object TtyVtermState {
 
-  val UV_TTY_SUPPORTED = 0
-  val UV_TTY_UNSUPPORTED = 1
+  val UV_TTY_SUPPORTED: TtyVtermState = 0
+  val UV_TTY_UNSUPPORTED: TtyVtermState = 1
 
 }
+
+opaque type UdpFlags = CInt
 
 object UdpFlags {
 
-  val UV_UDP_IPV6ONLY = 1
-  val UV_UDP_PARTIAL = 2
-  val UV_UDP_REUSEADDR = 4
-  val UV_UDP_MMSG_CHUNK = 8
-  val UV_UDP_MMSG_FREE = 16
-  val UV_UDP_LINUX_RECVERR = 32
-  val UV_UDP_RECVMMSG = 256
+  val UV_UDP_IPV6ONLY: UdpFlags = 1
+  val UV_UDP_PARTIAL: UdpFlags = 2
+  val UV_UDP_REUSEADDR: UdpFlags = 4
+  val UV_UDP_MMSG_CHUNK: UdpFlags = 8
+  val UV_UDP_MMSG_FREE: UdpFlags = 16
+  val UV_UDP_LINUX_RECVERR: UdpFlags = 32
+  val UV_UDP_RECVMMSG: UdpFlags = 256
 
 }
+
+opaque type Membership = CInt
 
 object Membership {
 
-  val UV_LEAVE_GROUP = 0
-  val UV_JOIN_GROUP = 1
+  val UV_LEAVE_GROUP: Membership = 0
+  val UV_JOIN_GROUP: Membership = 1
 
 }
+
+opaque type FsEvent = CInt
 
 object FsEvent {
 
-  val UV_RENAME = 1
-  val UV_CHANGE = 2
+  val UV_RENAME: FsEvent = 1
+  val UV_CHANGE: FsEvent = 2
 
 }
+
+opaque type FsEventFlags = CInt
 
 object FsEventFlags {
 
-  val UV_FS_EVENT_WATCH_ENTRY = 1
-  val UV_FS_EVENT_STAT = 2
-  val UV_FS_EVENT_RECURSIVE = 4
+  val UV_FS_EVENT_WATCH_ENTRY: FsEvent = 1
+  val UV_FS_EVENT_STAT: FsEvent = 2
+  val UV_FS_EVENT_RECURSIVE: FsEvent = 4
 
 }
+
+opaque type FsType = CInt
 
 object FsType {
 
-  val UV_FS_UNKNOWN = -1
-  val UV_FS_CUSTOM = 0
-  val UV_FS_OPEN = 1
-  val UV_FS_CLOSE = 2
-  val UV_FS_READ = 3
-  val UV_FS_WRITE = 4
-  val UV_FS_SENDFILE = 5
-  val UV_FS_STAT = 6
-  val UV_FS_LSTAT = 7
-  val UV_FS_FSTAT = 8
-  val UV_FS_FTRUNCATE = 9
-  val UV_FS_UTIME = 10
-  val UV_FS_FUTIME = 11
-  val UV_FS_ACCESS = 12
-  val UV_FS_CHMOD = 13
-  val UV_FS_FCHMOD = 14
-  val UV_FS_FSYNC = 15
-  val UV_FS_FDATASYNC = 16
-  val UV_FS_UNLINK = 17
-  val UV_FS_RMDIR = 18
-  val UV_FS_MKDIR = 19
-  val UV_FS_MKDTEMP = 20
-  val UV_FS_RENAME = 21
-  val UV_FS_SCANDIR = 22
-  val UV_FS_LINK = 23
-  val UV_FS_SYMLINK = 24
-  val UV_FS_READLINK = 25
-  val UV_FS_CHOWN = 26
-  val UV_FS_FCHOWN = 27
-  val UV_FS_REALPATH = 28
-  val UV_FS_COPYFILE = 29
-  val UV_FS_LCHOWN = 30
-  val UV_FS_OPENDIR = 31
-  val UV_FS_READDIR = 32
-  val UV_FS_CLOSEDIR = 33
-  val UV_FS_MKSTEMP = 34
-  val UV_FS_LUTIME = 35
+  val UV_FS_UNKNOWN: FsType = -1
+  val UV_FS_CUSTOM: FsType = 0
+  val UV_FS_OPEN: FsType = 1
+  val UV_FS_CLOSE: FsType = 2
+  val UV_FS_READ: FsType = 3
+  val UV_FS_WRITE: FsType = 4
+  val UV_FS_SENDFILE: FsType = 5
+  val UV_FS_STAT: FsType = 6
+  val UV_FS_LSTAT: FsType = 7
+  val UV_FS_FSTAT: FsType = 8
+  val UV_FS_FTRUNCATE: FsType = 9
+  val UV_FS_UTIME: FsType = 10
+  val UV_FS_FUTIME: FsType = 11
+  val UV_FS_ACCESS: FsType = 12
+  val UV_FS_CHMOD: FsType = 13
+  val UV_FS_FCHMOD: FsType = 14
+  val UV_FS_FSYNC: FsType = 15
+  val UV_FS_FDATASYNC: FsType = 16
+  val UV_FS_UNLINK: FsType = 17
+  val UV_FS_RMDIR: FsType = 18
+  val UV_FS_MKDIR: FsType = 19
+  val UV_FS_MKDTEMP: FsType = 20
+  val UV_FS_RENAME: FsType = 21
+  val UV_FS_SCANDIR: FsType = 22
+  val UV_FS_LINK: FsType = 23
+  val UV_FS_SYMLINK: FsType = 24
+  val UV_FS_READLINK: FsType = 25
+  val UV_FS_CHOWN: FsType = 26
+  val UV_FS_FCHOWN: FsType = 27
+  val UV_FS_REALPATH: FsType = 28
+  val UV_FS_COPYFILE: FsType = 29
+  val UV_FS_LCHOWN: FsType = 30
+  val UV_FS_OPENDIR: FsType = 31
+  val UV_FS_READDIR: FsType = 32
+  val UV_FS_CLOSEDIR: FsType = 33
+  val UV_FS_MKSTEMP: FsType = 34
+  val UV_FS_LUTIME: FsType = 35
 
 }
+
+opaque type DirEntType = CInt
 
 object DirEntType {
 
-  val UV_DIRENT_UNKNOWN = 0
-  val UV_DIRENT_FILE = 1
-  val UV_DIRENT_DIR = 2
-  val UV_DIRENT_LINK = 3
-  val UV_DIRENT_FIFO = 4
-  val UV_DIRENT_SOCKET = 5
-  val UV_DIRENT_CHAR = 6
-  val UV_DIRENT_BLOCK = 7
+  val UV_DIRENT_UNKNOWN: DirEntType = 0
+  val UV_DIRENT_FILE: DirEntType = 1
+  val UV_DIRENT_DIR: DirEntType = 2
+  val UV_DIRENT_LINK: DirEntType = 3
+  val UV_DIRENT_FIFO: DirEntType = 4
+  val UV_DIRENT_SOCKET: DirEntType = 5
+  val UV_DIRENT_CHAR: DirEntType = 6
+  val UV_DIRENT_BLOCK: DirEntType = 7
 
 }
 
-object Clock {
+opaque type ClockType = CInt
 
-  val UV_CLOCK_MONOTONIC = 0
-  val UV_CLOCK_REALTIME = 1
+object ClockType {
+
+  val UV_CLOCK_MONOTONIC: ClockType = 0
+  val UV_CLOCK_REALTIME: ClockType = 1
 
 }
