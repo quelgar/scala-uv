@@ -26,13 +26,16 @@ jobs:
     - name: Install libuv
       shell: bash
       run: |
-            if [ "$RUNNER-OS" == "Linux" ]; then
-              sudo apt-get install --yes libuv1-dev
-            elif [ "$RUNNER-OS" == "macOS" ]; then
-              brew install libuv
-            elif [ "$RUNNER-OS" == "Windows" ]; then
-              choco install libuv
-            fi
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          apt install --yes libuv1-dev
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+          brew install libuv
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          choco install libuv
+        else
+          echo "Unknown OS"
+          exit 1
+        fi
     - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
