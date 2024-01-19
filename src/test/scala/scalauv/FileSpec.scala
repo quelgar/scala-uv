@@ -133,10 +133,14 @@ final class FileSpec {
 
       val path = Path.of(filename)
       val actualText = Files.readString(path)
-      Files.delete(path)
+      FileReq.use { deleteReq =>
+        uv_fs_unlink(loop, deleteReq, cFilename, null)
+      }
+      val exists = Files.exists(path)
 
       assertEquals(text.length(), bytesWritten)
       assertEquals(text, actualText)
+      assertFalse("created file should be deleted", exists)
     }
   }
 
