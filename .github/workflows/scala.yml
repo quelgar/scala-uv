@@ -24,6 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install libuv
+      shell: bash
       run: |
             if [ "$RUNNER-OS" == "Linux" ]; then
               sudo apt-get install --yes libuv1-dev
