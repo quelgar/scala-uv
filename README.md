@@ -1,8 +1,10 @@
 # Scala Native bindings for libuv
 
+> Handcrafted, artisanal Scala Native bindings for libuv.
+
 **scala-uv** is a Scala Native library that provides Scala bindings for [libuv](https://libuv.org), which is a multi-platform asynchronous IO library written in C. libuv was originally developed for Node.js, but it's also used by other software projects.
 
-Only Scala 3 is supported at this time.
+Only Scala 3 is supported.
 
 ## Getting it
 
@@ -12,7 +14,7 @@ libraryDependencies += "io.github.quelgar" %%% "scala-uv" % "0.0.1"
 
 ## Current status
 
-Very early days, only some of the APIs are bound. What works so far:
+Very early days, most of the APIs have bindings, but not all. Many are not tested at all. What I've tried so far:
 
 * Error handling
 * Event loop
@@ -20,7 +22,7 @@ Very early days, only some of the APIs are bound. What works so far:
 * Read and write files
 * TCP client and server
 
-But the API is still in flux.
+But many details of the API are still in flux.
 
 ## Examples
 
@@ -98,12 +100,6 @@ uv_write(writeReq, stream, buf, 1.toUInt, onWrite).onFail {
 ### Malloc C strings
 
 While the `Zone` memory allocation API from Scala Native is very nice, it's not useful when the memory is freed in a different callback, as there won't be a shared lexical scope. So `mallocCString` converts a Scala string to a C string, allocating the memory the old-fashioned way.
-
-### Other UvUtils methods
-
-* allocate memory for requests
-* allocate memory for handles
-* allocate, use and free file system requests
 
 ---
 

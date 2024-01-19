@@ -90,8 +90,10 @@ object ErrorCodes {
   val EFTYPE: ErrorCode = uv_scala_errorcode_EFTYPE()
   val EILSEQ: ErrorCode = uv_scala_errorcode_EILSEQ()
   val ESOCKTNOSUPPORT: ErrorCode = uv_scala_errorcode_ESOCKTNOSUPPORT()
-  val ENODATA: ErrorCode = uv_scala_errorcode_ENODATA()
-  val EUNATCH: ErrorCode = uv_scala_errorcode_EUNATCH()
+
+  // these require libuv >= 1.46 but Ubuntu 22 LTS only has 1.43
+  // val ENODATA: ErrorCode = uv_scala_errorcode_ENODATA()
+  // val EUNATCH: ErrorCode = uv_scala_errorcode_EUNATCH()
 
 }
 
@@ -180,7 +182,7 @@ private[scalauv] object errors {
   def uv_scala_errorcode_EFTYPE(): ErrorCode = extern
   def uv_scala_errorcode_EILSEQ(): ErrorCode = extern
   def uv_scala_errorcode_ESOCKTNOSUPPORT(): ErrorCode = extern
-  def uv_scala_errorcode_ENODATA(): ErrorCode = extern
-  def uv_scala_errorcode_EUNATCH(): ErrorCode = extern
+  // def uv_scala_errorcode_ENODATA(): ErrorCode = extern
+  // def uv_scala_errorcode_EUNATCH(): ErrorCode = extern
 
 }
