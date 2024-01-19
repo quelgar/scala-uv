@@ -14,8 +14,8 @@ object Buffer {
 
   extension (buffer: Buffer) {
 
-    def base: Ptr[Byte] = helpers.uv_scala_buf_base(buffer)
-    def length: Int = helpers.uv_scala_buf_len(buffer).toInt
+    def base: Ptr[Byte] = helpers.scala_uv_buf_base(buffer)
+    def length: Int = helpers.scala_uv_buf_len(buffer).toInt
 
     def apply(index: Int): Byte = base(index)
 
@@ -45,15 +45,15 @@ object Buffer {
     inline def toPtr: Ptr[Byte] = buffer
 
     inline def init(base: Ptr[Byte], size: CSize): Unit =
-      helpers.uv_scala_buf_init(base, size.toUInt, buffer)
+      helpers.scala_uv_buf_init(base, size.toUInt, buffer)
 
     inline def mallocInit(size: CSize): Unit =
-      helpers.uv_scala_buf_init(stdlib.malloc(size), size.toUInt, buffer)
+      helpers.scala_uv_buf_init(stdlib.malloc(size), size.toUInt, buffer)
 
     inline def free(): Unit = stdlib.free(buffer)
   }
 
-  val structureSize: CSize = helpers.uv_scala_buf_struct_size()
+  val structureSize: CSize = helpers.scala_uv_buf_struct_size()
 
   inline def unsafeFromPtr(ptr: Ptr[Byte]): Buffer = ptr
 
@@ -62,7 +62,7 @@ object Buffer {
       size: CUnsignedInt
   ): Buffer = {
     val uvBuf = stackalloc[Byte](structureSize)
-    helpers.uv_scala_buf_init(ptr, size, uvBuf)
+    helpers.scala_uv_buf_init(ptr, size, uvBuf)
     uvBuf
   }
 
@@ -71,7 +71,7 @@ object Buffer {
       index: Int = 0
   ): Buffer = {
     val uvBuf = stackalloc[Byte](structureSize)
-    helpers.uv_scala_buf_init(
+    helpers.scala_uv_buf_init(
       array.at(index),
       (array.length - index).toUInt,
       uvBuf
@@ -83,7 +83,7 @@ object Buffer {
       Zone
   ): Buffer = {
     val uvBuf = alloc[Byte](structureSize)
-    helpers.uv_scala_buf_init(
+    helpers.scala_uv_buf_init(
       array.at(index),
       (array.length - index).toUInt,
       uvBuf
@@ -93,13 +93,13 @@ object Buffer {
 
   def malloc(base: Ptr[Byte], size: CSize): Buffer = {
     val uvBuf = stdlib.malloc(structureSize.toULong)
-    helpers.uv_scala_buf_init(base, size.toUInt, uvBuf)
+    helpers.scala_uv_buf_init(base, size.toUInt, uvBuf)
     uvBuf
   }
 
   def malloc(array: Array[Byte], index: Int = 0): Buffer = {
     val uvBuf = stdlib.malloc(structureSize.toULong)
-    helpers.uv_scala_buf_init(
+    helpers.scala_uv_buf_init(
       array.at(index),
       (array.length - index).toUInt,
       uvBuf

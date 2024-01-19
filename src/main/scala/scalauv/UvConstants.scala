@@ -13,17 +13,17 @@ object RunMode {
 }
 
 object FileOpenFlags {
-  val O_RDONLY = 0
-  val O_WRONLY = 1
-  val O_RDWR = 2
+  val O_RDONLY = helpers.scala_uv_value_o_rdonly()
+  val O_WRONLY = helpers.scala_uv_value_o_wronly()
+  val O_RDWR = helpers.scala_uv_value_o_rdwr()
 
-  val O_CREAT = 0x200
-  val O_EXCL = 0x800
-  val O_TRUNC = 0x400
+  val O_CREAT = helpers.scala_uv_value_o_creat()
+  val O_EXCL = helpers.scala_uv_value_o_excl()
+  val O_TRUNC = helpers.scala_uv_value_o_trunc()
 
-  val O_APPEND = 0x08
-  val O_DSYNC = 0x400000
-  val O_SYNC = 0x80
+  val O_APPEND = helpers.scala_uv_value_o_append()
+  val O_DSYNC = helpers.scala_uv_value_o_dsync()
+  val O_SYNC = helpers.scala_uv_value_o_sync()
 }
 
 object CreateMode {

@@ -73,7 +73,7 @@ object ConnectReq {
   extension (r: ConnectReq) {
 
     inline def connectReqStreamHandle: StreamHandle =
-      helpers.uv_scala_connect_stream_handle(r)
+      helpers.scala_uv_connect_stream_handle(r)
 
   }
 
