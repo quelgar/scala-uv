@@ -27,7 +27,7 @@ jobs:
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
-          apt install --yes libuv1-dev
+          sudo apt-get install --yes libuv1-dev
         elif [ "$RUNNER_OS" == "macOS" ]; then
           brew install libuv
         elif [ "$RUNNER_OS" == "Windows" ]; then
