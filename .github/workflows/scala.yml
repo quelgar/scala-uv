@@ -19,11 +19,17 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Install libuv
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Checkout libuv (for Windows)
+      uses: actions/checkout@v3
+      with:
+        repository: libuv/libuv
+        path: libuv-build
+    - name: Install/build libuv
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
@@ -31,7 +37,7 @@ jobs:
         elif [ "$RUNNER_OS" == "macOS" ]; then
           brew install libuv
         elif [ "$RUNNER_OS" == "Windows" ]; then
-          choco install libuv
+          bash build-windows.sh
         else
           echo "Unknown OS"
           exit 1
@@ -44,6 +50,11 @@ jobs:
         cache: 'sbt'
     - name: Run tests
       run: sbt test
+  
+  dependency-graph:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
       # Optional: This step uploads information to the GitHub dependency graph and unblocking Dependabot alerts for the repository
     - name: Upload dependency graph
       uses: scalacenter/sbt-dependency-submission@v2
