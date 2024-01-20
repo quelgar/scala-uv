@@ -49,7 +49,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: sbt test
+      run: sbt $SBT_NATIVE_COMPILE $SBT_NATIVE_LINK test
   
   dependency-graph:
     runs-on: ubuntu-latest
