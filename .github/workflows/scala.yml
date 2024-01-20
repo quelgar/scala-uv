@@ -51,6 +51,7 @@ jobs:
         cache: 'sbt'
     - name: Run tests
       run: sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+      shell: bash
   
   dependency-graph:
     runs-on: ubuntu-latest
