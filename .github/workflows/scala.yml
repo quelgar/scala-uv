@@ -50,7 +50,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: sbt $SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test
+      run: sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
   
   dependency-graph:
     runs-on: ubuntu-latest
