@@ -29,6 +29,7 @@ jobs:
       with:
         repository: libuv/libuv
         path: libuv-build
+        ref: v1.43.0
     - name: Install/build libuv
       shell: bash
       run: |
@@ -49,7 +50,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: sbt $SBT_NATIVE_COMPILE $SBT_NATIVE_LINK test
+      run: sbt $SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test
   
   dependency-graph:
     runs-on: ubuntu-latest
