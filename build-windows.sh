@@ -1,6 +1,6 @@
 #!/bin/bash
 
-repo_dir=$(pwd)
+repo_dir=$(cygpath --mixed $(pwd))
 
 cd libuv-build
 
