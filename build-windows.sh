@@ -9,6 +9,6 @@ cmake --build build
 
 find build
 
-export CPATH="libuv-build/build"
+echo CPATH="libuv-build/include" >> $GITHUB_ENV
 
-export LIBRARY_PATH="libuv-build/build"
+echo LIBRARY_PATH="libuv-build/build/Debug" >> $GITHUB_ENV
