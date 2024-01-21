@@ -1,6 +1,11 @@
 #include <uv.h>
-#include <netinet/in.h>
 #include <string.h>
+
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <netinet/in.h>
+#endif
 
 void scala_uv_buf_init(char *base, unsigned int len, uv_buf_t *buffer)
 {
