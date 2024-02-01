@@ -48,21 +48,48 @@ private[scalauv] object helpers {
   ): Unit =
     extern
 
-  def scala_uv_value_o_rdonly(): CInt = extern
-
-  def scala_uv_value_o_wronly(): CInt = extern
-
-  def scala_uv_value_o_rdwr(): CInt = extern
+  def scala_uv_value_o_append(): CInt = extern
 
   def scala_uv_value_o_creat(): CInt = extern
 
-  def scala_uv_value_o_excl(): CInt = extern
+  def scala_uv_value_o_direct(): CInt = extern
 
-  def scala_uv_value_o_trunc(): CInt = extern
-
-  def scala_uv_value_o_append(): CInt = extern
+  def scala_uv_value_o_directory(): CInt = extern
 
   def scala_uv_value_o_dsync(): CInt = extern
 
+  def scala_uv_value_o_excl(): CInt = extern
+
+  def scala_uv_value_o_exlock(): CInt = extern
+
+  def scala_uv_value_o_filemap(): CInt = extern
+
+  def scala_uv_value_o_noatime(): CInt = extern
+
+  def scala_uv_value_o_noctty(): CInt = extern
+
+  def scala_uv_value_o_nofollow(): CInt = extern
+
+  def scala_uv_value_o_nonblock(): CInt = extern
+
+  def scala_uv_value_o_random(): CInt = extern
+
+  def scala_uv_value_o_rdonly(): CInt = extern
+
+  def scala_uv_value_o_rdwr(): CInt = extern
+
+  def scala_uv_value_o_sequential(): CInt = extern
+
+  def scala_uv_value_o_short_lived(): CInt = extern
+
+  def scala_uv_value_o_symlink(): CInt = extern
+
   def scala_uv_value_o_sync(): CInt = extern
+
+  def scala_uv_value_o_temporary(): CInt = extern
+
+  def scala_uv_value_o_trunc(): CInt = extern
+
+  def scala_uv_value_o_wronly(): CInt = extern
+
 }

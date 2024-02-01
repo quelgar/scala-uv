@@ -7,3 +7,4 @@ src/test/resources/write-test.txt
 /.metals
 .vscode
 metals.sbt
+/.scala-build

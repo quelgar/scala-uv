@@ -80,47 +80,114 @@ void scala_uv_init_sockaddr_in6(const char *address, int port, unsigned int flow
     addr->sin6_scope_id = htonl(scope_id);
 }
 
-int scala_uv_value_o_rdonly()
-{
-    return O_RDONLY;
-}
+// File open constants
 
-int scala_uv_value_o_wronly()
+int scala_uv_value_o_append()
 {
-    return O_WRONLY;
-}
-
-int scala_uv_value_o_rdwr()
-{
-    return O_RDWR;
+    return UV_FS_O_APPEND;
 }
 
 int scala_uv_value_o_creat()
 {
-    return O_CREAT;
+    return UV_FS_O_CREAT;
 }
 
-int scala_uv_value_o_excl()
+int scala_uv_value_o_direct()
 {
-    return O_EXCL;
+    return UV_FS_O_DIRECT;
 }
 
-int scala_uv_value_o_trunc()
+int scala_uv_value_o_directory()
 {
-    return O_TRUNC;
-}
-
-int scala_uv_value_o_append()
-{
-    return O_APPEND;
+    return UV_FS_O_DIRECTORY;
 }
 
 int scala_uv_value_o_dsync()
 {
-    return O_DSYNC;
+    return UV_FS_O_DSYNC;
+}
+
+int scala_uv_value_o_excl()
+{
+    return UV_FS_O_EXCL;
+}
+
+int scala_uv_value_o_exlock()
+{
+    return UV_FS_O_EXLOCK;
+}
+
+int scala_uv_value_o_filemap()
+{
+    return UV_FS_O_FILEMAP;
+}
+
+int scala_uv_value_o_noatime()
+{
+    return UV_FS_O_NOATIME;
+}
+
+int scala_uv_value_o_noctty()
+{
+    return UV_FS_O_NOCTTY;
+}
+
+int scala_uv_value_o_nofollow()
+{
+    return UV_FS_O_NOFOLLOW;
+}
+
+int scala_uv_value_o_nonblock()
+{
+    return UV_FS_O_NONBLOCK;
+}
+
+int scala_uv_value_o_random()
+{
+    return UV_FS_O_RANDOM;
+}
+
+int scala_uv_value_o_rdonly()
+{
+    return UV_FS_O_RDONLY;
+}
+
+int scala_uv_value_o_rdwr()
+{
+    return UV_FS_O_RDWR;
+}
+
+int scala_uv_value_o_sequential()
+{
+    return UV_FS_O_SEQUENTIAL;
+}
+
+int scala_uv_value_o_short_lived()
+{
+    return UV_FS_O_SHORT_LIVED;
+}
+
+int scala_uv_value_o_symlink()
+{
+    return UV_FS_O_SYMLINK;
 }
 
 int scala_uv_value_o_sync()
 {
-    return O_SYNC;
+    return UV_FS_O_SYNC;
+}
+
+int scala_uv_value_o_temporary()
+{
+    return UV_FS_O_TEMPORARY;
+}
+
+int scala_uv_value_o_trunc()
+{
+    return UV_FS_O_TRUNC;
+}
+
+int scala_uv_value_o_wronly()
+{
+    return UV_FS_O_WRONLY;
 }

@@ -13,17 +13,28 @@ object RunMode {
 }
 
 object FileOpenFlags {
-  val O_RDONLY = helpers.scala_uv_value_o_rdonly()
-  val O_WRONLY = helpers.scala_uv_value_o_wronly()
-  val O_RDWR = helpers.scala_uv_value_o_rdwr()
-
-  val O_CREAT = helpers.scala_uv_value_o_creat()
-  val O_EXCL = helpers.scala_uv_value_o_excl()
-  val O_TRUNC = helpers.scala_uv_value_o_trunc()
-
   val O_APPEND = helpers.scala_uv_value_o_append()
+  val O_CREAT = helpers.scala_uv_value_o_creat()
+  val O_DIRECT = helpers.scala_uv_value_o_direct()
+  val O_DIRECTORY = helpers.scala_uv_value_o_directory()
   val O_DSYNC = helpers.scala_uv_value_o_dsync()
+  val O_EXCL = helpers.scala_uv_value_o_excl()
+  val O_EXLOCK = helpers.scala_uv_value_o_exlock()
+  val O_FILEMAP = helpers.scala_uv_value_o_filemap()
+  val O_NOATIME = helpers.scala_uv_value_o_noatime()
+  val O_NOCTTY = helpers.scala_uv_value_o_noctty()
+  val O_NOFOLLOW = helpers.scala_uv_value_o_nofollow()
+  val O_NONBLOCK = helpers.scala_uv_value_o_nonblock()
+  val O_RANDOM = helpers.scala_uv_value_o_random()
+  val O_RDONLY = helpers.scala_uv_value_o_rdonly()
+  val O_RDWR = helpers.scala_uv_value_o_rdwr()
+  val O_SEQUENTIAL = helpers.scala_uv_value_o_sequential()
+  val O_SHORT_LIVED = helpers.scala_uv_value_o_short_lived()
+  val O_SYMLINK = helpers.scala_uv_value_o_symlink()
   val O_SYNC = helpers.scala_uv_value_o_sync()
+  val O_TEMPORARY = helpers.scala_uv_value_o_temporary()
+  val O_TRUNC = helpers.scala_uv_value_o_trunc()
+  val O_WRONLY = helpers.scala_uv_value_o_wronly()
 }
 
 object CreateMode {
