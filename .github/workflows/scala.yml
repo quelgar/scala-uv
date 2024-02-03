@@ -50,7 +50,12 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: export PATH=build/Debug:$PATH sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          PATH=build/Debug:$PATH sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+        else
+          sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+        fi
       shell: bash
   
   dependency-graph:
