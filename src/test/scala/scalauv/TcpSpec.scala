@@ -136,8 +136,8 @@ object TcpSpec {
           uv_close(handle, onClose)
           setFailed(UvUtils.errorMessage(code.toInt))
         case _ =>
-          val (text, done) =
-            buf.asUtf8String(numRead.toInt).span(_ != DoneMarker)
+          buf.length = numRead.toInt
+          val (text, done) = buf.asUtf8String.span(_ != DoneMarker)
           recordReceived(text)
           if done.nonEmpty then {
             val listenHandle = Handle.unsafeFromPtr(uv_handle_get_data(handle))

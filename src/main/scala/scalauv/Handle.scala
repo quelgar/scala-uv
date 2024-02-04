@@ -3,32 +3,57 @@ package scalauv
 import scala.scalanative.unsafe.*
 import scala.scalanative.libc.stdlib
 
+/** Representation of a `uv_handle_t*` native type.
+  */
 opaque type Handle = Ptr[Byte]
 
+/** Constructors for the [[scalauv.Handle Handle]] opaque type that represents a
+  * pointer to the `uv_handle_t` native C type. While this object can be used to
+  * allocate handles by providing a handle type, it is more common to use the
+  * equivalent allocation methods for the exact handle type you want, for
+  * example `TcpHandle.malloc()`.
+  */
 object Handle {
   given Tag[Handle] = Tag.Ptr(Tag.Byte)
 
   extension (h: Handle) {
+
+    /** Extract the underlying native pointer for this handle.
+      */
     inline def toPtr: Ptr[Byte] = h
 
+    /** Frees this hnadle structure.
+      */
     inline def free(): Unit = stdlib.free(h)
   }
 
+  /** Casts a native pointer to a handle structure to the `Handle` type.
+    */
   inline def unsafeFromPtr(ptr: Ptr[Byte]): Handle = ptr
 
-  inline def zoneAllocate(handleType: HandleType)(using Zone): Handle =
-    alloc[Byte](LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
-
+  /** Stack allocate a handle structure of the specified type.
+    */
   inline def stackAllocate(handleType: HandleType): Handle =
     Handle.unsafeFromPtr(stackalloc[Byte](LibUv.uv_handle_size(handleType)))
 
+  /** Zone allocate a handle structure of the specified type.
+    */
+  inline def zoneAllocate(handleType: HandleType)(using Zone): Handle =
+    alloc[Byte](LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
+
+  /** Malloc allocate a handle structure of the specified type.
+    */
   inline def malloc(handleType: HandleType): Handle =
     stdlib.malloc(LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
 
 }
 
+/** A native C enum representing the type of a handle.
+  */
 opaque type HandleType = CInt
 
+/** Constants for alll the handle types supported by libuv.
+  */
 object HandleType {
   val UV_UNKNOWN_HANDLE: HandleType = 0
   val UV_ASYNC: HandleType = 1

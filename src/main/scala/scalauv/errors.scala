@@ -2,8 +2,14 @@ package scalauv
 
 import scala.scalanative.unsafe.*
 
+/** Type alias for native C integer, which is returned by all libuv functions
+  * that can fail to indicate the error. If the result is < 0, then it is an
+  * error code.
+  */
 type ErrorCode = CInt
 
+/** All possible error codes that libuv functions can return.
+  */
 object ErrorCodes {
 
   import errors.*

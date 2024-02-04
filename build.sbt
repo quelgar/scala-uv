@@ -7,7 +7,7 @@ organization := "io.github.quelgar"
 
 name := "scala-uv"
 
-version := "0.0.1"
+version := "0.0.2"
 
 ThisBuild / versionScheme := Some("early-semver")
 
@@ -40,11 +40,29 @@ sonatypeCredentialHost := "s01.oss.sonatype.org"
 
 sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
 
-credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
+// credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials")
 
 licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 
 import xerial.sbt.Sonatype._
 sonatypeProjectHosting := Some(
   GitHubHosting("quelgar", "scala-uv", "lodea@mac.com")
+)
+
+autoAPIMappings := true
+
+apiURL := Some(
+  url(
+    s"https://javadoc.io/doc/io.github.quelgar/scala-uv_native0.4_3/${version.value}/index.html"
+  )
+)
+
+Compile / doc / scalacOptions ++= Seq(
+  "-social-links:github::https://github.com/quelgar,twitter::https://twitter.com/quelgar",
+  "-groups",
+  "-project-version",
+  version.value,
+  "-doc-root-content",
+  "doc-root.txt",
+  "-skip-by-id:scalauv.main"
 )

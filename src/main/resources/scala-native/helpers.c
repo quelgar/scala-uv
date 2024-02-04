@@ -19,9 +19,19 @@ void *scala_uv_buf_base(const uv_buf_t *buffer)
     return buffer->base;
 }
 
+void scala_uv_buf_base_set(uv_buf_t *buffer, void *base)
+{
+    buffer->base = base;
+}
+
 size_t scala_uv_buf_len(const uv_buf_t *buffer)
 {
     return buffer->len;
+}
+
+void scala_uv_buf_len_set(uv_buf_t *buffer, size_t len)
+{
+    buffer->len = len;
 }
 
 size_t scala_uv_buf_struct_size()
