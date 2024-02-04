@@ -3,32 +3,60 @@ package scalauv
 import scala.scalanative.unsafe.*
 import scala.scalanative.libc.stdlib
 
+/** Representation of a `uv_handle_t*` native type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/handle.html#c.uv_handle_t Libuv Docs]]
+  */
 opaque type Handle = Ptr[Byte]
 
+/** Constructors for the [[scalauv.Handle Handle]] opaque type that represents a
+  * pointer to the `uv_handle_t` native C type. While this object can be used to
+  * allocate handles by providing a handle type, it is more common to use the
+  * equivalent allocation methods for the exact handle type you want, for
+  * example `TcpHandle.malloc()`.
+  */
 object Handle {
   given Tag[Handle] = Tag.Ptr(Tag.Byte)
 
   extension (h: Handle) {
+
+    /** Extract the underlying native pointer for this handle.
+      */
     inline def toPtr: Ptr[Byte] = h
 
+    /** Frees this hnadle structure.
+      */
     inline def free(): Unit = stdlib.free(h)
   }
 
+  /** Casts a native pointer to a handle structure to the `Handle` type.
+    */
   inline def unsafeFromPtr(ptr: Ptr[Byte]): Handle = ptr
 
-  inline def zoneAllocate(handleType: HandleType)(using Zone): Handle =
-    alloc[Byte](LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
-
+  /** Stack allocate a handle structure of the specified type.
+    */
   inline def stackAllocate(handleType: HandleType): Handle =
     Handle.unsafeFromPtr(stackalloc[Byte](LibUv.uv_handle_size(handleType)))
 
+  /** Zone allocate a handle structure of the specified type.
+    */
+  inline def zoneAllocate(handleType: HandleType)(using Zone): Handle =
+    alloc[Byte](LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
+
+  /** Malloc allocate a handle structure of the specified type.
+    */
   inline def malloc(handleType: HandleType): Handle =
     stdlib.malloc(LibUv.uv_handle_size(handleType)).asInstanceOf[Handle]
 
 }
 
+/** A native C enum representing the type of a handle.
+  */
 opaque type HandleType = CInt
 
+/** Constants for alll the handle types supported by libuv.
+  */
 object HandleType {
   val UV_UNKNOWN_HANDLE: HandleType = 0
   val UV_ASYNC: HandleType = 1
@@ -51,6 +79,11 @@ object HandleType {
   val UV_HANDLE_TYPE_MAX: HandleType = 18
 }
 
+/** The `uv_async_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/async.html#c.uv_async_t Libuv Docs]]
+  */
 opaque type AsyncHandle <: Handle = Ptr[Byte]
 
 object AsyncHandle {
@@ -66,6 +99,11 @@ object AsyncHandle {
     Handle.malloc(HandleType.UV_ASYNC)
 }
 
+/** The `uv_timer_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/timer.html#c.uv_timer_t Libuv Docs]]
+  */
 opaque type TimerHandle <: Handle = Ptr[Byte]
 
 object TimerHandle {
@@ -81,7 +119,12 @@ object TimerHandle {
     Handle.malloc(HandleType.UV_TIMER)
 }
 
-type PrepareHandle = Ptr[Byte]
+/** The `uv_prepare_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/prepare.html#c.uv_prepare_t Libuv Docs]]
+  */
+opaque type PrepareHandle <: Handle = Ptr[Byte]
 
 object PrepareHandle {
   given Tag[PrepareHandle] = Tag.Ptr(Tag.Byte)
@@ -96,7 +139,12 @@ object PrepareHandle {
     Handle.malloc(HandleType.UV_PREPARE)
 }
 
-type CheckHandle = Ptr[Byte]
+/** The `uv_check_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/check.html#c.uv_check_t Libuv Docs]]
+  */
+opaque type CheckHandle <: Handle = Ptr[Byte]
 
 object CheckHandle {
   given Tag[CheckHandle] = Tag.Ptr(Tag.Byte)
@@ -111,7 +159,12 @@ object CheckHandle {
     Handle.malloc(HandleType.UV_CHECK)
 }
 
-type IdleHandle = Ptr[Byte]
+/** The `uv_idle_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/idle.html#c.uv_idle_t Libuv Docs]]
+  */
+opaque type IdleHandle <: Handle = Ptr[Byte]
 
 object IdleHandle {
   given Tag[IdleHandle] = Tag.Ptr(Tag.Byte)
@@ -126,7 +179,12 @@ object IdleHandle {
     Handle.malloc(HandleType.UV_IDLE)
 }
 
-type PollHandle = Ptr[Byte]
+/** The `uv_poll_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/poll.html#c.uv_poll_t Libuv Docs]]
+  */
+opaque type PollHandle <: Handle = Ptr[Byte]
 
 object PollHandle {
   given Tag[PollHandle] = Tag.Ptr(Tag.Byte)
@@ -141,7 +199,12 @@ object PollHandle {
     Handle.malloc(HandleType.UV_POLL)
 }
 
-type SignalHandle = Ptr[Byte]
+/** The `uv_signal_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/signal.html#c.uv_signal_t Libuv Docs]]
+  */
+opaque type SignalHandle <: Handle = Ptr[Byte]
 
 object SignalHandle {
   given Tag[SignalHandle] = Tag.Ptr(Tag.Byte)
@@ -156,6 +219,11 @@ object SignalHandle {
     Handle.malloc(HandleType.UV_SIGNAL)
 }
 
+/** The `uv_stream_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/stream.html#c.uv_stream_t Libuv Docs]]
+  */
 opaque type StreamHandle <: Handle = Ptr[Byte]
 
 object StreamHandle {
@@ -164,6 +232,11 @@ object StreamHandle {
 
 }
 
+/** The `uv_tcp_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/tcp.html#c.uv_tcp_t Libuv Docs]]
+  */
 opaque type TcpHandle <: StreamHandle = Ptr[Byte]
 
 object TcpHandle {
@@ -179,6 +252,11 @@ object TcpHandle {
     Handle.malloc(HandleType.UV_TCP)
 }
 
+/** The `uv_pipe_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/pipe.html#c.uv_pipe_t Libuv Docs]]
+  */
 opaque type PipeHandle <: StreamHandle = Ptr[Byte]
 
 object PipeHandle {
@@ -194,6 +272,11 @@ object PipeHandle {
     Handle.malloc(HandleType.UV_NAMED_PIPE)
 }
 
+/** The `uv_tty_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/tty.html#c.uv_tty_t Libuv Docs]]
+  */
 opaque type TtyHandle <: StreamHandle = Ptr[Byte]
 
 object TtyHandle {
@@ -209,6 +292,11 @@ object TtyHandle {
     Handle.malloc(HandleType.UV_TTY)
 }
 
+/** The `uv_udp_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/udp.html#c.uv_udp_t Libuv Docs]]
+  */
 opaque type UdpHandle = Ptr[Byte]
 
 object UdpHandle {
@@ -224,6 +312,11 @@ object UdpHandle {
     Handle.malloc(HandleType.UV_UDP)
 }
 
+/** The `uv_fs_event_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/fs_event.html#c.uv_fs_event_t Libuv Docs]]
+  */
 opaque type FsEventHandle = Ptr[Byte]
 
 object FsEventHandle {
@@ -239,6 +332,11 @@ object FsEventHandle {
     Handle.malloc(HandleType.UV_FS_EVENT)
 }
 
+/** The `uv_fs_poll_t*` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/fs_poll.html#c.uv_fs_poll_t Libuv Docs]]
+  */
 opaque type FsPollHandle = Ptr[Byte]
 
 object FsPollHandle {
@@ -254,4 +352,9 @@ object FsPollHandle {
     Handle.malloc(HandleType.UV_FS_POLL)
 }
 
+/** The `uv_fs_t` type.
+  *
+  * @see
+  *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_t Libuv Docs]]
+  */
 type FileHandle = CInt

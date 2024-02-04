@@ -3,12 +3,22 @@ package scalauv
 import scalanative.unsafe.*
 import scala.scalanative.libc.stdlib
 
+/** Representation of a `uv_req_t*` native type.
+  */
 opaque type Req = Ptr[Byte]
 
+/** Constructors for the [[scalauv.Req Req]] opaque type that represents a
+  * pointer to the `uv_req_t` native C type. While this object can be used to
+  * allocate requests by providing a request type, it is more common to use the
+  * equivalent allocation methods for the exact request type you want, for
+  * example `ConnectReq.malloc()`.
+  */
 object Req {
 
   given Tag[Req] = Tag.Ptr(Tag.Byte)
 
+  /** Cast a native pointer to a request structure to the `Req` type.
+    */
   inline def unsafeFromPtr(ptr: Ptr[Byte]): Req = ptr
 
   /** Allocate the specified type of request on the stack.
@@ -23,16 +33,24 @@ object Req {
   inline def stackAllocate(requestType: RequestType): Req =
     stackalloc[Byte](LibUv.uv_req_size(requestType))
 
+  /** Zone allocate the specified type of request.
+    */
   inline def zoneAllocate(requestType: RequestType)(using Zone): Req =
     alloc[Byte](LibUv.uv_req_size(requestType))
 
+  /** Allocate the specified type of request.
+    */
   inline def malloc(requestType: RequestType): Req =
     stdlib.malloc(LibUv.uv_req_size(requestType)).asInstanceOf[Req]
 
   extension (r: Req) {
 
+    /** Casts this request to a native pointer.
+      */
     inline def toPtr: Ptr[Byte] = r
 
+    /** Frees this request structure.
+      */
     inline def free(): Unit = stdlib.free(r)
 
   }
@@ -41,6 +59,8 @@ object Req {
 
 opaque type RequestType = CInt
 
+/** Constants for all the request types supported by libuv.
+  */
 object RequestType {
   val UNKNOWN_REQ: RequestType = 0
   val REQ: RequestType = 1
@@ -81,6 +101,21 @@ object ConnectReq {
 
 opaque type ShutdownReq <: Req = Ptr[Byte]
 
+object ShutdownReq {
+
+  given Tag[ShutdownReq] = Tag.Ptr(Tag.Byte)
+
+  inline def stackAllocate(): ShutdownReq =
+    Req.stackAllocate(RequestType.SHUTDOWN)
+
+  inline def zoneAllocate()(using Zone): ShutdownReq =
+    Req.zoneAllocate(RequestType.SHUTDOWN)
+
+  inline def malloc(): ShutdownReq =
+    Req.malloc(RequestType.SHUTDOWN)
+
+}
+
 opaque type WriteReq <: Req = Ptr[Byte]
 
 object WriteReq {
@@ -100,12 +135,33 @@ object WriteReq {
 
 opaque type UdpSendReq <: Req = Ptr[Byte]
 
+object UdpSendReq {
+
+  given Tag[UdpSendReq] = Tag.Ptr(Tag.Byte)
+
+  inline def stackAllocate(): UdpSendReq =
+    Req.stackAllocate(RequestType.UDP_SEND)
+
+  inline def zoneAllocate()(using Zone): UdpSendReq =
+    Req.zoneAllocate(RequestType.UDP_SEND)
+
+  inline def malloc(): UdpSendReq =
+    Req.malloc(RequestType.UDP_SEND)
+
+}
+
 opaque type FileReq <: Req = Ptr[Byte]
 
 object FileReq {
 
   inline def stackAllocate(): FileReq =
     Req.stackAllocate(RequestType.FS)
+
+  inline def zoneAllocate()(using Zone): FileReq =
+    Req.zoneAllocate(RequestType.FS)
+
+  inline def malloc(): FileReq =
+    Req.malloc(RequestType.FS)
 
   /** Allocate a new file request on the stack, provide it to the specified
     * function, and clean it up after the function returns. Note this is only
@@ -123,3 +179,52 @@ object FileReq {
 }
 
 opaque type WorkReq <: Req = Ptr[Byte]
+
+object WorkReq {
+
+  given Tag[WorkReq] = Tag.Ptr(Tag.Byte)
+
+  inline def stackAllocate(): WorkReq =
+    Req.stackAllocate(RequestType.WORK)
+
+  inline def zoneAllocate()(using Zone): WorkReq =
+    Req.zoneAllocate(RequestType.WORK)
+
+  inline def malloc(): WorkReq =
+    Req.malloc(RequestType.WORK)
+
+}
+
+opaque type GetAddrInfoReq <: Req = Ptr[Byte]
+
+object GetAddrInfoReq {
+
+  given Tag[GetAddrInfoReq] = Tag.Ptr(Tag.Byte)
+
+  inline def stackAllocate(): GetAddrInfoReq =
+    Req.stackAllocate(RequestType.GETADDRINFO)
+
+  inline def zoneAllocate()(using Zone): GetAddrInfoReq =
+    Req.zoneAllocate(RequestType.GETADDRINFO)
+
+  inline def malloc(): GetAddrInfoReq =
+    Req.malloc(RequestType.GETADDRINFO)
+
+}
+
+opaque type GetNameInfoReq <: Req = Ptr[Byte]
+
+object GetNameInfoReq {
+
+  given Tag[GetNameInfoReq] = Tag.Ptr(Tag.Byte)
+
+  inline def stackAllocate(): GetNameInfoReq =
+    Req.stackAllocate(RequestType.GETNAMEINFO)
+
+  inline def zoneAllocate()(using Zone): GetNameInfoReq =
+    Req.zoneAllocate(RequestType.GETNAMEINFO)
+
+  inline def malloc(): GetNameInfoReq =
+    Req.malloc(RequestType.GETNAMEINFO)
+
+}

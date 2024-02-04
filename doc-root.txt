@@ -1,0 +1,9 @@
+/** **scala-uv** provides Scala Native bindings for the [libuv](https://libuv.org/) library.
+
+The main API is located in the [[scalauv.LibUv]] object. Other important types are
+[[scalauv.Handle]] and [[scalauv.Req]].
+
+See [[scalauv.ErrorCodes]] for error codes.
+
+See [[scalauv.UvUtils]] for some useful utilities to make working with libuv easier.
+*/

@@ -13,7 +13,11 @@ private[scalauv] object helpers {
 
   def scala_uv_buf_base(buffer: Ptr[Byte]): Ptr[Byte] = extern
 
+  def scala_uv_buf_base_set(buffer: Ptr[Byte], base: Ptr[Byte]): Unit = extern
+
   def scala_uv_buf_len(buffer: Ptr[Byte]): CSize = extern
+
+  def scala_uv_buf_len_set(buffer: Ptr[Byte], len: CSize): Unit = extern
 
   def scala_uv_buf_struct_size(): CSize = extern
 
