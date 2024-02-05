@@ -219,7 +219,7 @@ object LibUv {
     */
   def uv_is_active(handle: Handle): CInt = extern
 
-  /** Check if a handle is closing.
+  /** Check if a handle is closing or closed.
     *
     * @see
     *   [[https://docs.libuv.org/en/v1.x/handle.html#c.uv_is_closing LibUv docs]]
