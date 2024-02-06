@@ -32,12 +32,13 @@ final class TcpSpec {
           UvUtils.attemptCatch {
             status.checkErrorThrowIO()
             val clientTcpHandle = TcpHandle.malloc()
-            UvUtils.onFail(clientTcpHandle.free())
             println("New connection")
-            uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
+            uv_tcp_init(loop, clientTcpHandle)
+              .onFail(clientTcpHandle.free())
+              .checkErrorThrowIO()
+            UvUtils.onFail(uv_close(clientTcpHandle, onClose))
             uv_handle_set_data(clientTcpHandle, handle.toPtr)
             uv_accept(handle, clientTcpHandle).checkErrorThrowIO()
-            UvUtils.onFail(uv_close(clientTcpHandle, onClose))
             uv_read_start(clientTcpHandle, allocBuffer, onRead)
               .checkErrorThrowIO()
             ()
@@ -125,7 +126,7 @@ object TcpSpec {
     failed = Some(msg)
   }
 
-  def onClose: CloseCallback = (h: Handle) => stdlib.free(h.toPtr)
+  def onClose: CloseCallback = (_: Handle).free()
 
   def onRead: StreamReadCallback = {
     (handle: StreamHandle, numRead: CSSize, buf: Buffer) =>

@@ -168,34 +168,33 @@ Use `.checkErrorThrowIO()` on the result of a libuv function to throw an `IOExce
 uv_listen(serverTcpHandle, 128, onNewConnection).checkErrorThrowIO()
 ```
 
-When using a callback-based library like libuv, it is common that when everything works, cleanup like freeing memory must be done in a different callback function. However if something fails, we need to immediately cleanup anything we've allocated already. We can use `.checkErrorThrowIO()` with `try`/`catch` to do this, but it's a little verbose as everything that might need to be cleaned up needs to be declared as a `var` outside the `try` block:
+When using a callback-based library like libuv, it is common that when everything works, cleanup like freeing memory must be done in a different callback function. However if something fails, we need to immediately cleanup anything we've allocated already. We can use `.checkErrorThrowIO()` with `try`/`catch` to do this, but we need to mainain some `var`s to keep track of how far we got:
 
 ```scala
+def onClose: CloseCallback = (_: Handle).free()
+
 def onNewConnection: ConnectionCallback = {
   (handle: StreamHandle, status: ErrorCode) =>
     val loop = uv_handle_get_loop(handle)
     var clientTcpHandle: TcpHandle = null
+    var initialized = false
     try {
       status.checkErrorThrowIO()
       clientTcpHandle = TcpHandle.malloc()
-      println("New connection")
       uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
+      initialized = true
       uv_handle_set_data(clientTcpHandle, handle.toPtr)
       uv_accept(handle, clientTcpHandle).checkErrorThrowIO()
-      try {
-        uv_read_start(clientTcpHandle, allocBuffer, onRead)
-          .checkErrorThrowIO()
-      } catch {
-        case e: IOException =>
-          uv_close(clientTcpHandle, onClose)
-          throw e
-      }
+      uv_read_start(clientTcpHandle, allocBuffer, onRead)
+        .checkErrorThrowIO()
       ()
     } catch { 
       case e: IOException =>
-        if (clientTcpHandle != null) {
+        if (initialized)
+          // note the onClose callback will free the handle
+          uv_close(clientTcpHandle, onClose)
+        else if (clientTcpHandle != null)
           clientTcpHandle.free()
-        }
         setFailed(exception.getMessage())
     }
 }
@@ -205,26 +204,26 @@ As an alternative, scala-uv provides `UvUtils.attemptCatch` to make scenarios su
 
 
 ```scala
+def onClose: CloseCallback = (_: Handle).free()
+
 def onNewConnection: ConnectionCallback = {
   (handle: StreamHandle, status: ErrorCode) =>
     val loop = uv_handle_get_loop(handle)
     UvUtils.attemptCatch {
       status.checkErrorThrowIO()
       val clientTcpHandle = TcpHandle.malloc()
-      UvUtils.onFail(clientTcpHandle.free())
-      println("New connection")
-      uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
+      uv_tcp_init(loop, clientTcpHandle)
+        .onFail(clientTcpHandle.free())
+        .checkErrorThrowIO()
+      UvUtils.onFail(uv_close(clientTcpHandle, onClose))
       uv_handle_set_data(clientTcpHandle, handle.toPtr)
       uv_accept(handle, clientTcpHandle).checkErrorThrowIO()
-      UvUtils.onFail(uv_close(clientTcpHandle, onClose))
       uv_read_start(clientTcpHandle, allocBuffer, onRead)
         .checkErrorThrowIO()
       ()
     } { exception =>
       setFailed(exception.getMessage())
     }
-    // if `uv_read_start` failed, then `uv_close` followed by `clientTcpHandle.free()`
-    // have been run in that order by this point
 }
 ```
 

@@ -121,6 +121,11 @@ object UvUtils {
     ): Unit =
       onCompleteActions.popAll().foreach(_(maybeFailure))
 
+    private[UvUtils] inline def dropLast(): Unit = {
+      onCompleteActions.pop()
+      ()
+    }
+
   }
 
   /** Attempts to run a block of code, allowing cleanup operations to be
@@ -202,6 +207,8 @@ object UvUtils {
   inline def onComplete(f: => Unit)(using cleanup: Cleanup): Unit =
     cleanup.addOnCompleteAction(_ => f)
 
+  inline def dropLast()(using cleanup: Cleanup): Unit =
+    cleanup.dropLast()
 }
 
 extension (uvResult: CInt) {
