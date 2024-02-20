@@ -45,6 +45,14 @@ object Req {
 
   extension (r: Req) {
 
+    inline def data: Ptr[Byte] = LibUv.uv_req_get_data(r)
+
+    inline def data_=(data: Ptr[Byte]): Unit = LibUv.uv_req_set_data(r, data)
+
+    inline def reqType: RequestType = LibUv.uv_req_get_type(r)
+
+    inline def cancel(): ErrorCode = LibUv.uv_cancel(r)
+
     /** Casts this request to a native pointer.
       */
     inline def toPtr: Ptr[Byte] = r
@@ -62,6 +70,13 @@ opaque type RequestType = CInt
 /** Constants for all the request types supported by libuv.
   */
 object RequestType {
+
+  extension (rt: RequestType) {
+
+    inline def size: CSize = LibUv.uv_req_size(rt)
+
+  }
+
   val UNKNOWN_REQ: RequestType = 0
   val REQ: RequestType = 1
   val CONNECT: RequestType = 2
@@ -114,6 +129,13 @@ object ShutdownReq {
   inline def malloc(): ShutdownReq =
     Req.malloc(RequestType.SHUTDOWN)
 
+  extension (r: ShutdownReq) {
+
+    inline def shutdownReqStreamHandle: StreamHandle =
+      helpers.scala_uv_shutdown_stream_handle(r)
+
+  }
+
 }
 
 opaque type WriteReq <: Req = Ptr[Byte]
@@ -130,6 +152,16 @@ object WriteReq {
 
   inline def malloc(): WriteReq =
     Req.malloc(RequestType.WRITE)
+
+  extension (r: WriteReq) {
+
+    inline def writeReqStreamHandle: StreamHandle =
+      helpers.scala_uv_write_stream_handle(r)
+
+    inline def writeReqSendStreamHandle: StreamHandle =
+      helpers.scala_uv_send_stream_handle(r)
+
+  }
 
 }
 
@@ -153,6 +185,28 @@ object UdpSendReq {
 opaque type FileReq <: Req = Ptr[Byte]
 
 object FileReq {
+
+  given Tag[FileReq] = Tag.Ptr(Tag.Byte)
+
+  extension (req: FileReq) {
+
+    inline def loop: Loop = helpers.scala_uv_fs_req_get_loop(req)
+
+    inline def fsType: FsType = LibUv.uv_fs_get_type(req)
+
+    inline def result: CSSize = LibUv.uv_fs_get_result(req)
+
+    inline def systemError: CInt = LibUv.uv_fs_get_system_error(req)
+
+    inline def ptr: Ptr[Byte] = LibUv.uv_fs_get_ptr(req)
+
+    inline def path: CString = LibUv.uv_fs_get_path(req)
+
+    inline def statBuf: Stat = LibUv.uv_fs_get_statbuf(req)
+
+    inline def cleanup(): Unit = LibUv.uv_fs_req_cleanup(req)
+
+  }
 
   inline def stackAllocate(): FileReq =
     Req.stackAllocate(RequestType.FS)

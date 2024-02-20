@@ -7,6 +7,11 @@
 #include <netinet/in.h>
 #endif
 
+uv_loop_t *scala_uv_fs_req_get_loop(const uv_fs_t *req)
+{
+    return req->loop;
+}
+
 void scala_uv_buf_init(char *base, unsigned int len, uv_buf_t *buffer)
 {
     uv_buf_t buf = uv_buf_init(base, len);

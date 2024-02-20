@@ -283,7 +283,7 @@ object SocketAddressIp4 {
 
   val size: CSize = helpers.scala_uv_sizeof_sockaddr_in()
 
-  inline def apply(address: Ip4Address, port: Port): SocketAddressIp4 = {
+  def apply(address: Ip4Address, port: Port): SocketAddressIp4 = {
     val sockaddr = stackalloc[Byte](size).asInstanceOf[SocketAddressIp4]
     helpers.scala_uv_init_sockaddr_in(address, port, sockaddr)
     sockaddr

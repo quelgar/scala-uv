@@ -1599,82 +1599,13 @@ object LibUv {
   // =========================================================
   // File system operations
 
-  /** Pointer to time strucutre.
-    *
-    * @see
-    *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_timespec_t LibUv docs]]
-    * @group fs
-    */
-  type TimeSpec = Ptr[CStruct2[CLong, CLong]]
-
-  /** Pointer to file `stat` strcture.
-    *
-    * @see
-    *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_stat_t LibUv docs]]
-    * @group fs
-    */
-  type Stat = Ptr[CStruct16[
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    TimeSpec,
-    TimeSpec,
-    TimeSpec,
-    TimeSpec
-  ]]
-
-  /** Pointer to `struct statfs`.
-    *
-    * @see
-    *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_statfs_t LibUv docs]]
-    * @group fs
-    */
-  type StatFs = Ptr[CStruct11[
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong,
-    CUnsignedLongLong
-  ]]
-
-  /** Pointer to directory entry structure.
-    *
-    * @see
-    *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_dirent_t LibUv docs]]
-    * @group fs
-    */
-  type DirEnt = Ptr[CStruct2[CString, DirEntType]]
-
-  /** Pointer to directory structure.
-    *
-    * @see
-    *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_dir_t LibUv docs]]
-    * @group fs
-    */
-  type Dir = Ptr[CStruct2[DirEnt, CSize]]
-
   /** Callback for file system requests.
     *
     * @see
     *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_cb LibUv docs]]
     * @group fs
     */
-  type FsCallback = CFuncPtr1[Req, Unit]
+  type FsCallback = CFuncPtr1[FileReq, Unit]
 
   /** Cleans up a file system request.
     *

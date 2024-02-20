@@ -21,6 +21,14 @@ object Handle {
 
   extension (h: Handle) {
 
+    inline def loop: Loop = LibUv.uv_handle_get_loop(h)
+
+    inline def handleType: HandleType = LibUv.uv_handle_get_type(h)
+
+    inline def data: Ptr[Byte] = LibUv.uv_handle_get_data(h)
+
+    inline def data_=(data: Ptr[Byte]): Unit = LibUv.uv_handle_set_data(h, data)
+
     /** Extract the underlying native pointer for this handle.
       */
     inline def toPtr: Ptr[Byte] = h
@@ -229,6 +237,12 @@ opaque type StreamHandle <: Handle = Ptr[Byte]
 object StreamHandle {
 
   given Tag[StreamHandle] = Tag.Ptr(Tag.Byte)
+
+  extension (h: StreamHandle) {
+
+    inline def writeQueueSize: CSize = LibUv.uv_stream_get_write_queue_size(h)
+
+  }
 
 }
 

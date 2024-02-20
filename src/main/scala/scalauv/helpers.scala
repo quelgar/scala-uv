@@ -5,6 +5,8 @@ import scala.scalanative.unsafe.*
 @extern
 private[scalauv] object helpers {
 
+  def scala_uv_fs_req_get_loop(req: FileReq): Loop = extern
+
   def scala_uv_buf_init(
       base: Ptr[CChar],
       len: CUnsignedInt,
@@ -25,12 +27,12 @@ private[scalauv] object helpers {
 
   def scala_uv_connect_stream_handle(req: ConnectReq): StreamHandle = extern
 
-  def scala_uv_shutdown_stream_handle(req: Req): StreamHandle =
+  def scala_uv_shutdown_stream_handle(req: ShutdownReq): StreamHandle =
     extern
 
-  def scala_uv_write_stream_handle(req: Req): StreamHandle = extern
+  def scala_uv_write_stream_handle(req: WriteReq): StreamHandle = extern
 
-  def scala_uv_send_stream_handle(req: Req): StreamHandle = extern
+  def scala_uv_send_stream_handle(req: WriteReq): StreamHandle = extern
 
   def scala_uv_sizeof_sockaddr_in(): CSize = extern
 

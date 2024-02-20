@@ -25,23 +25,26 @@ object Buffer {
 
   given Tag[Buffer] = Tag.Ptr(Tag.Byte)
 
+  // to avoid compiler bug where same name is used in inline methods in different files
+  private val h = scalauv.helpers
+
   extension (buffer: Buffer) {
 
     /** Pointer to the actual content.
       */
-    def base: Ptr[Byte] = helpers.scala_uv_buf_base(buffer)
+    inline def base: Ptr[Byte] = h.scala_uv_buf_base(buffer)
 
-    def base_=(ptr: Ptr[Byte]): Unit =
-      helpers.scala_uv_buf_base_set(buffer, ptr)
+    inline def base_=(ptr: Ptr[Byte]): Unit =
+      h.scala_uv_buf_base_set(buffer, ptr)
 
     /** The number of bytes (starting from `base`) that should be considered
       * part of this buffer. When reading, you probably want to set this to the
       * number of bytes read.
       */
-    def length: Int = helpers.scala_uv_buf_len(buffer).toInt
+    inline def length: Int = h.scala_uv_buf_len(buffer).toInt
 
-    def length_=(len: Int): Unit =
-      helpers.scala_uv_buf_len_set(buffer, len.toUInt)
+    inline def length_=(len: Int): Unit =
+      h.scala_uv_buf_len_set(buffer, len.toUInt)
 
     /** Gets the byte at the specified index.
       *
@@ -93,23 +96,47 @@ object Buffer {
       * `length`.
       */
     inline def init(base: Ptr[Byte], length: CSize): Unit =
-      helpers.scala_uv_buf_init(base, length.toUInt, buffer)
+      h.scala_uv_buf_init(base, length.toUInt, buffer)
 
     /** Allocates a new native byte array of `size` bytes, and uses it to
       * initialize this buffer structure. `base` is set to the newly allocated
       * array, and `length` is set to `size`.
       */
     inline def mallocInit(size: CSize): Unit =
-      helpers.scala_uv_buf_init(stdlib.malloc(size), size.toUInt, buffer)
+      h.scala_uv_buf_init(stdlib.malloc(size), size.toUInt, buffer)
 
     /** Frees this boffer structure. **Note:** does not free the `base` pointer.
       */
     inline def free(): Unit = stdlib.free(buffer)
+
+    /** Perform an operation using this buffer with the length temporarily
+      * changed. This can be useful after a read that only partially filled the
+      * buffer.
+      */
+    inline def withLength[A](tempLength: Int)(f: Buffer => A): A = {
+      val oldLength = length
+      length = tempLength
+      val result = f(buffer)
+      length = oldLength
+      result
+    }
+
+    inline def withOffset[A](offset: Int)(f: Buffer => A): A = {
+      val origBase = base
+      val origLength = length
+      base += offset
+      length -= offset
+      val result = f(buffer)
+      length = origLength
+      base = origBase
+      result
+    }
+
   }
 
   /** The size of the `uv_buf_t` structure. Useful for manual allocation.
     */
-  val structureSize: CSize = helpers.scala_uv_buf_struct_size()
+  val structureSize: CSize = h.scala_uv_buf_struct_size()
 
   /** Cast a native pointer to a buffer structure pointer.
     */
@@ -166,7 +193,7 @@ object Buffer {
     */
   def malloc(base: Ptr[Byte], size: CSize): Buffer = {
     val uvBuf = stdlib.malloc(structureSize.toULong)
-    helpers.scala_uv_buf_init(base, size.toUInt, uvBuf)
+    h.scala_uv_buf_init(base, size.toUInt, uvBuf)
     uvBuf
   }
 
@@ -176,7 +203,7 @@ object Buffer {
     */
   def malloc(array: Array[Byte], index: Int = 0): Buffer = {
     val uvBuf = stdlib.malloc(structureSize.toULong)
-    helpers.scala_uv_buf_init(
+    h.scala_uv_buf_init(
       array.at(index),
       (array.length - index).toUInt,
       uvBuf

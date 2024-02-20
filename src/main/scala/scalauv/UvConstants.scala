@@ -39,8 +39,24 @@ object FileOpenFlags {
 
 object CreateMode {
 
+  val S_IRWXU = 0x1c0
   val S_IRUSR = 0x100
   val S_IWUSR = 0x80
+  val S_IXUSR = 0x40
+
+  val S_IRWXG = 0x38
+  val S_IRGRP = 0x20
+  val S_IWGRP = 0x10
+  val S_IXGRP = 0x8
+
+  val S_IRWXO = 0x7
+  val S_IROTH = 0x4
+  val S_IWOTH = 0x2
+  val S_IXOTH = 0x1
+
+  val S_ISUID = 0x800
+  val S_ISGID = 0x400
+  val S_ISVTX = 0x200
 
   val None = 0
 
@@ -198,6 +214,8 @@ object FsType {
 opaque type DirEntType = CInt
 
 object DirEntType {
+
+  given Tag[DirEntType] = Tag.Int
 
   val UV_DIRENT_UNKNOWN: DirEntType = 0
   val UV_DIRENT_FILE: DirEntType = 1

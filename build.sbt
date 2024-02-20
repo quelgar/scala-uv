@@ -7,7 +7,7 @@ organization := "io.github.quelgar"
 
 name := "scala-uv"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 ThisBuild / versionScheme := Some("early-semver")
 
