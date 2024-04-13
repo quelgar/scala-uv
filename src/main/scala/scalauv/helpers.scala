@@ -1,6 +1,7 @@
 package scalauv
 
 import scala.scalanative.unsafe.*
+import scala.scalanative.unsigned.UShort
 
 @extern
 private[scalauv] object helpers {
@@ -97,5 +98,15 @@ private[scalauv] object helpers {
   def scala_uv_value_o_trunc(): CInt = extern
 
   def scala_uv_value_o_wronly(): CInt = extern
+
+  def scala_uv_value_af_inet(): CInt = extern
+
+  def scala_uv_value_af_inet6(): CInt = extern
+
+  def scala_uv_sockaddr_family(s: SocketAddress): CInt = extern
+
+  def scala_uv_sockaddr_in_port(s: SocketAddress): UShort = extern
+
+  def scala_uv_sockaddr_in_addr(s: SocketAddress): Ip4Address = extern
 
 }

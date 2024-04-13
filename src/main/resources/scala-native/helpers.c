@@ -206,3 +206,28 @@ int scala_uv_value_o_wronly()
 {
     return UV_FS_O_WRONLY;
 }
+
+int scala_uv_value_af_inet()
+{
+    return AF_INET;
+}
+
+int scala_uv_value_af_inet6()
+{
+    return AF_INET6;
+}
+
+sa_family_t scala_uv_sockaddr_family(const struct sockaddr *addr)
+{
+    return addr->sa_family;
+}
+
+in_port_t scala_uv_sockaddr_port(const struct sockaddr_in *addr)
+{
+    return addr->sin_port;
+}
+
+struct in_addr *scala_uv_sockaddr_address(const struct sockaddr_in *addr)
+{
+    return &(addr->sin_addr);
+}

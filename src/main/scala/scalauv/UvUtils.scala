@@ -277,6 +277,16 @@ type Port = Int
 
 opaque type SocketAddress = Ptr[Byte]
 
+object SocketAddress {
+
+  given Tag[SocketAddress] = Tag.Ptr(Tag.Byte)
+
+  extension (a: SocketAddress) {
+    inline def family: AddressFamily = helpers.scala_uv_sockaddr_family(a)
+  }
+
+}
+
 opaque type SocketAddressIp4 <: SocketAddress = Ptr[Byte]
 
 object SocketAddressIp4 {
@@ -311,8 +321,67 @@ object SocketAddressIp4 {
   inline def loopbackAddress(port: Port): SocketAddressIp4 =
     apply(Ip4Address.loopback, port)
 
+  extension (a: SocketAddressIp4) {
+
+    inline def port: Port = helpers.scala_uv_sockaddr_in_port(a).toInt
+    inline def addr: Ip4Address = helpers.scala_uv_sockaddr_in_addr(a)
+
+  }
+
 }
 
 opaque type SocketAddressIp6 <: SocketAddress = Ptr[Byte]
 
-opaque type AddrInfo = Ptr[Byte]
+type AddressFamily = CInt
+
+object AddressFamily {
+
+  val inet: AddressFamily = helpers.scala_uv_value_af_inet()
+  val inet6: AddressFamily = helpers.scala_uv_value_af_inet6()
+
+}
+
+opaque type AddrInfo <: CStruct = CStruct8[
+  CInt,
+  AddressFamily,
+  CInt,
+  CInt,
+  CUnsignedInt,
+  SocketAddress,
+  CString,
+  Ptr[Byte] // can't use AddrInfo here because of recursion compiler error
+]
+
+object AddrInfo {
+
+  given Tag[AddrInfo] = Tag.CStruct8(
+    summon[Tag[CInt]],
+    summon[Tag[AddressFamily]],
+    summon[Tag[CInt]],
+    summon[Tag[CInt]],
+    summon[Tag[CUnsignedInt]],
+    summon[Tag[SocketAddress]],
+    summon[Tag[CString]],
+    summon[Tag[Ptr[Byte]]]
+  )
+
+  extension (a: AddrInfo) {
+    // these can't be inlined because the implicits for the Tag[CStruct8[...]] don't work, don't know why
+    def flags: CInt = a._1
+    def flags_=(v: CInt): Unit = a._1 = v
+    def family: AddressFamily = a._2
+    def family_=(v: AddressFamily): Unit = a._2 = v
+    def socktype: CInt = a._3
+    def socktype_=(v: CInt): Unit = a._3 = v
+    def protocol: CInt = a._4
+    def protocol_=(v: CInt): Unit = a._4 = v
+    def addrlen: CUnsignedInt = a._5
+    def addrlen_=(v: CUnsignedInt): Unit = a._5 = v
+    def addr: SocketAddress = a._6
+    def addr_=(v: SocketAddress): Unit = a._6 = v
+    def canonname: CString = a._7
+    def canonname_=(v: CString): Unit = a._7 = v
+    def next: AddrInfo = a._8.asInstanceOf[AddrInfo]
+    def next_=(v: AddrInfo): Unit = a._8 = v.asInstanceOf[Ptr[Byte]]
+  }
+}
