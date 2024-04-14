@@ -53,9 +53,9 @@ jobs:
     - name: Run tests
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
-          PATH=libuv-build/build/Debug:$PATH sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+          PATH=libuv-build/build/Debug:$PATH sbt "$SBT_NATIVE_CONFIG show nativeConfig ; test"
         else
-          sbt "$SBT_NATIVE_COMPILE $SBT_NATIVE_LINK show nativeCompileOptions ; show nativeLinkingOptions ; test"
+          sbt "$SBT_NATIVE_CONFIG $SBT_NATIVE_LINK show nativeConfig  ; test"
         fi
       shell: bash
   
