@@ -18,7 +18,7 @@ final class FileSpec {
     val expected = "Hello, world!"
     val filename = c"src/test/resources/test.txt"
 
-    withZone {
+    Zone {
       val loop = uv_default_loop()
 
       val BufSize: CSize = 1024.toUInt
@@ -90,7 +90,7 @@ final class FileSpec {
     val text = "my country is the world, and my religion is to do good"
     val filename = "src/test/resources/write-test.txt"
 
-    withZone {
+    Zone {
       val loop = uv_default_loop()
 
       val cText = toCString(text, StandardCharsets.UTF_8)

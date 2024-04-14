@@ -1,7 +1,6 @@
 package scalauv
 
 import scala.scalanative.unsafe.*
-import scala.scalanative.unsigned.UShort
 
 @extern
 private[scalauv] object helpers {
@@ -34,26 +33,6 @@ private[scalauv] object helpers {
   def scala_uv_write_stream_handle(req: WriteReq): StreamHandle = extern
 
   def scala_uv_send_stream_handle(req: WriteReq): StreamHandle = extern
-
-  def scala_uv_sizeof_sockaddr_in(): CSize = extern
-
-  def scala_uv_init_sockaddr_in(
-      address: CInt,
-      port: CInt,
-      socketAddress: SocketAddressIp4
-  ): Unit =
-    extern
-
-  def scala_uv_sizeof_sockaddr_in6(): CSize = extern
-
-  def scala_uv_init_sockaddr_in6(
-      address: Ptr[Byte],
-      port: CInt,
-      flowInfo: CUnsignedInt,
-      scopeId: CUnsignedInt,
-      socketAddress: SocketAddressIp6
-  ): Unit =
-    extern
 
   def scala_uv_value_o_append(): CInt = extern
 
@@ -98,15 +77,5 @@ private[scalauv] object helpers {
   def scala_uv_value_o_trunc(): CInt = extern
 
   def scala_uv_value_o_wronly(): CInt = extern
-
-  def scala_uv_value_af_inet(): CInt = extern
-
-  def scala_uv_value_af_inet6(): CInt = extern
-
-  def scala_uv_sockaddr_family(s: SocketAddress): CInt = extern
-
-  def scala_uv_sockaddr_in_port(s: SocketAddress): UShort = extern
-
-  def scala_uv_sockaddr_in_addr(s: SocketAddress): Ip4Address = extern
 
 }

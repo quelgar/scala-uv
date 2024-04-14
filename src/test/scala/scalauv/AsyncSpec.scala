@@ -11,7 +11,7 @@ final class AsyncSpec {
 
   @Test
   def runsAnAsyncCallback(): Unit = {
-    withZone {
+    Zone {
       val loop = LibUv.uv_default_loop()
 
       val asyncHandle = AsyncHandle.zoneAllocate()

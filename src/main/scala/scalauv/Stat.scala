@@ -3,18 +3,29 @@ package scalauv
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 import java.time.Instant
+import scala.scalanative.posix.inttypes.*
 
 /** Time structure.
   *
   * @see
   *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_timespec_t LibUv docs]]
   */
-trait TimeSpec {
-  def seconds: CLong
-  def nanoSeconds: CLong
+opaque type TimeSpec = CStruct2[CLong, CLong]
 
-  final inline def toInstant: Instant =
-    Instant.ofEpochSecond(seconds, nanoSeconds)
+object TimeSpec {
+
+  extension (ts: TimeSpec) {
+
+    inline def seconds: CLong = ts._1
+    inline def seconds_=(s: CLong): Unit = ts._1 = s
+
+    inline def nanoSeconds: CLong = ts._2
+    inline def nanoSeconds_=(ns: CLong): Unit = ts._2 = ns
+
+    inline def toInstant: Instant =
+      Instant.ofEpochSecond(seconds.toLong, nanoSeconds.toLong)
+  }
+
 }
 
 /** Pointer to file `stat` strcture.
@@ -23,69 +34,61 @@ trait TimeSpec {
   *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_stat_t LibUv docs]]
   * @group fs
   */
-opaque type Stat = Ptr[CStruct20[
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong,
-  CLongLong
-]]
+opaque type Stat = CStruct16[
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  TimeSpec,
+  TimeSpec,
+  TimeSpec,
+  TimeSpec
+]
 
 object Stat {
 
   extension (s: Stat) {
 
-    inline def device: CUnsignedLongLong = s._1
-    inline def mode: CUnsignedLongLong = s._2
-    inline def nlink: CUnsignedLongLong = s._3
-    inline def uid: CUnsignedLongLong = s._4
-    inline def gid: CUnsignedLongLong = s._5
-    inline def rdev: CUnsignedLongLong = s._6
-    inline def ino: CUnsignedLongLong = s._7
-    inline def size: CUnsignedLongLong = s._8
-    inline def blksize: CUnsignedLongLong = s._9
-    inline def blocks: CUnsignedLongLong = s._10
-    inline def flags: CUnsignedLongLong = s._11
-    inline def gen: CUnsignedLongLong = s._12
-
-    inline def accessTimeSpec: TimeSpec = new TimeSpec {
-      override def seconds: CLong = s._13
-      override def nanoSeconds: CLong = s._14
-    }
-    inline def accessTime: Instant = Instant.ofEpochSecond(s._13, s._14)
-
-    inline def modificationTimeSpec: TimeSpec = new TimeSpec {
-      override def seconds: CLong = s._15
-      override def nanoSeconds: CLong = s._16
-    }
-    inline def modificationTime: Instant = Instant.ofEpochSecond(s._15, s._16)
-
-    inline def inodeChangeTimeSpec: TimeSpec = new TimeSpec {
-      override def seconds: CLong = s._17
-      override def nanoSeconds: CLong = s._18
-    }
-    inline def inodeChangeTime: Instant = Instant.ofEpochSecond(s._17, s._18)
-
-    inline def birthTimeSpec: TimeSpec = new TimeSpec {
-      override def seconds: CLong = s._19
-      override def nanoSeconds: CLong = s._20
-    }
-    inline def birthTime: Instant = Instant.ofEpochSecond(s._19, s._20)
+    inline def device: uint64_t = s._1
+    inline def device_=(d: uint64_t): Unit = s._1 = d
+    inline def mode: uint64_t = s._2
+    inline def mode_=(m: uint64_t): Unit = s._2 = m
+    inline def nlink: uint64_t = s._3
+    inline def nlink_=(n: uint64_t): Unit = s._3 = n
+    inline def uid: uint64_t = s._4
+    inline def uid_=(u: uint64_t): Unit = s._4 = u
+    inline def gid: uint64_t = s._5
+    inline def gid_=(g: uint64_t): Unit = s._5 = g
+    inline def rdev: uint64_t = s._6
+    inline def rdev_=(r: uint64_t): Unit = s._6 = r
+    inline def ino: uint64_t = s._7
+    inline def ino_=(i: uint64_t): Unit = s._7 = i
+    inline def size: uint64_t = s._8
+    inline def size_=(size: uint64_t): Unit = s._8 = size
+    inline def blksize: uint64_t = s._9
+    inline def blksize_=(b: uint64_t): Unit = s._9 = b
+    inline def blocks: uint64_t = s._10
+    inline def blocks_=(b: uint64_t): Unit = s._10 = b
+    inline def flags: uint64_t = s._11
+    inline def flags_=(f: uint64_t): Unit = s._11 = f
+    inline def gen: uint64_t = s._12
+    inline def gen_=(g: uint64_t): Unit = s._12 = g
+    inline def accessTime: TimeSpec = s._13
+    inline def accessTime_=(t: TimeSpec): Unit = s._13 = t
+    inline def modificationTime: TimeSpec = s._14
+    inline def modificationTime_=(t: TimeSpec): Unit = s._14 = t
+    inline def inodeChangeTime: TimeSpec = s._15
+    inline def inodeChangeTime_=(t: TimeSpec): Unit = s._15 = t
+    inline def birthTime: TimeSpec = s._16
+    inline def birthTime_=(t: TimeSpec): Unit = s._16 = t
 
   }
 }
@@ -96,19 +99,16 @@ object Stat {
   *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_statfs_t LibUv docs]]
   * @group fs
   */
-type StatFs = Ptr[CStruct11[
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong,
-  CUnsignedLongLong
-]]
+type StatFs = CStruct8[
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  uint64_t,
+  CArray[uint64_t, Nat._4]
+]
 
 /** Pointer to directory entry structure.
   *
@@ -116,7 +116,7 @@ type StatFs = Ptr[CStruct11[
   *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_dirent_t LibUv docs]]
   * @group fs
   */
-opaque type DirEnt = Ptr[CStruct2[CString, DirEntType]]
+opaque type DirEnt = CStruct2[CString, DirEntType]
 
 object DirEnt {
 
@@ -134,7 +134,7 @@ object DirEnt {
   *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_dir_t LibUv docs]]
   * @group fs
   */
-opaque type Dir = Ptr[CStruct2[DirEnt, CSize]]
+opaque type Dir = CStruct2[DirEnt, CSize]
 
 object Dir {
 
@@ -149,8 +149,8 @@ object Dir {
   }
 
   def zoneAllocate(size: Int)(using Zone): Dir = {
-    val entries = alloc[CStruct2[CString, DirEntType]](size.toUInt)
-    val dir = alloc[CStruct2[DirEnt, CSize]](1)
+    val entries = alloc[DirEnt](size.toUInt)
+    val dir = alloc[Dir](1)
     dir.entries = entries
     dir.numberOfEntries = size.toUInt
     dir

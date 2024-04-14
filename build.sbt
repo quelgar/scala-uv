@@ -1,4 +1,4 @@
-scalaVersion := "3.3.1"
+scalaVersion := "3.3.3"
 
 enablePlugins(ScalaNativePlugin)
 enablePlugins(ScalaNativeJUnitPlugin)
@@ -7,7 +7,7 @@ organization := "io.github.quelgar"
 
 name := "scala-uv"
 
-version := "0.0.3-SNAPSHOT"
+version := "0.1.0-SNAPSHOT"
 
 ThisBuild / versionScheme := Some("early-semver")
 
@@ -22,6 +22,7 @@ nativeConfig ~= { c =>
   c.withLTO(LTO.none) // thin
     .withMode(Mode.debug) // releaseFast
     .withGC(GC.immix) // commix
+    .withMultithreading(false)
 }
 
 scalacOptions ++= Seq(

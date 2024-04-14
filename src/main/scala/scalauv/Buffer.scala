@@ -145,10 +145,7 @@ object Buffer {
   /** Allocates a new buffer structure on the stack and initializes it with the
     * specified `base` and `length`.
     */
-  inline def stackAllocate(
-      base: Ptr[Byte],
-      length: CUnsignedInt
-  ): Buffer = {
+  inline def stackAllocate(base: Ptr[Byte], length: CSize): Buffer = {
     val uvBuf = stackalloc[Byte](structureSize)
     uvBuf.init(base, length)
     uvBuf
@@ -191,8 +188,8 @@ object Buffer {
   /** Allocates a new buffer structure and initializes it with the specified
     * `base` and `length`.
     */
-  def malloc(base: Ptr[Byte], size: CSize): Buffer = {
-    val uvBuf = stdlib.malloc(structureSize.toULong)
+  def malloc(base: Ptr[CChar], size: CSize): Buffer = {
+    val uvBuf = stdlib.malloc(structureSize)
     h.scala_uv_buf_init(base, size.toUInt, uvBuf)
     uvBuf
   }
@@ -202,7 +199,7 @@ object Buffer {
     * `array`. `length` is set to `array.length - index`.
     */
   def malloc(array: Array[Byte], index: Int = 0): Buffer = {
-    val uvBuf = stdlib.malloc(structureSize.toULong)
+    val uvBuf = stdlib.malloc(structureSize)
     h.scala_uv_buf_init(
       array.at(index),
       (array.length - index).toUInt,

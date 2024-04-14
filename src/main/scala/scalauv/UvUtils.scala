@@ -10,14 +10,6 @@ import java.nio.charset.Charset
 import scala.util.control.NonFatal
 import scala.collection.mutable.Stack
 
-/** More convenient Scala 3 version of a `Zone` block. Instead of `Zone {
-  * implicit zone => f }` you can use `withZone { f }`.
-  *
-  * @param f
-  *   The function that requires a given `Zone`.
-  */
-inline def withZone[A](f: Zone ?=> A): A = Zone(z => f(using z))
-
 /** Converts a Scala string to a native C string allocated using `malloc`.
   *
   * @param s
@@ -60,7 +52,7 @@ object UvUtils {
 
   /** Gets the error message for a libuv error code as a Scala string.
     */
-  inline def errorMessage(errorCode: ErrorCode): String = withZone {
+  inline def errorMessage(errorCode: ErrorCode): String = Zone {
     val cString = alloc[Byte](ErrorCodeMessageMex)
     LibUv.uv_strerror_r(errorCode, cString, ErrorCodeMessageMex)
     fromCString(cString)
@@ -68,7 +60,7 @@ object UvUtils {
 
   /** Gets the name and message for a libuv error code in a single Scala string.
     */
-  def errorNameAndMessage(errorCode: ErrorCode): String = withZone {
+  def errorNameAndMessage(errorCode: ErrorCode): String = Zone {
     val cString = alloc[Byte](ErrorCodeMessageMex)
     LibUv.uv_err_name_r(errorCode, cString, ErrorCodeMessageMex)
     val name = fromCString(cString)
@@ -253,135 +245,4 @@ extension (uvResult: CInt) {
   inline def successAs[A](v: => A): Either[CInt, A] =
     if uvResult < 0 then Left(uvResult) else Right(v)
 
-}
-
-type Ip4Address = Int
-
-object Ip4Address {
-
-  inline def apply(a: Int, b: Int, c: Int, d: Int): Ip4Address = {
-    val aShifted = a << 24
-    val bShifted = b << 16
-    val cShifted = c << 8
-    val dShifted = d
-    aShifted | bShifted | cShifted | dShifted
-  }
-
-  val Unspecified: Ip4Address = apply(0, 0, 0, 0)
-
-  val loopback: Ip4Address = apply(127, 0, 0, 1)
-
-}
-
-type Port = Int
-
-opaque type SocketAddress = Ptr[Byte]
-
-object SocketAddress {
-
-  given Tag[SocketAddress] = Tag.Ptr(Tag.Byte)
-
-  extension (a: SocketAddress) {
-    inline def family: AddressFamily = helpers.scala_uv_sockaddr_family(a)
-  }
-
-}
-
-opaque type SocketAddressIp4 <: SocketAddress = Ptr[Byte]
-
-object SocketAddressIp4 {
-
-  val size: CSize = helpers.scala_uv_sizeof_sockaddr_in()
-
-  def apply(address: Ip4Address, port: Port): SocketAddressIp4 = {
-    val sockaddr = stackalloc[Byte](size).asInstanceOf[SocketAddressIp4]
-    helpers.scala_uv_init_sockaddr_in(address, port, sockaddr)
-    sockaddr
-  }
-
-  inline def fromBytes(a: Int, b: Int, c: Int, d: Int)(
-      port: Port
-  ): SocketAddressIp4 =
-    apply(Ip4Address(a, b, c, d), port)
-
-  inline def fromString(
-      ip: String,
-      port: Port
-  ): Either[ErrorCode, SocketAddressIp4] = withZone {
-    val cString = toCString(ip)
-    val sockaddr = stackalloc[Byte](size).asInstanceOf[SocketAddressIp4]
-    LibUv
-      .uv_ip4_addr(cString, port, sockaddr)
-      .successAs(sockaddr)
-  }
-
-  inline def unspecifiedAddress(port: Port): SocketAddressIp4 =
-    apply(Ip4Address.Unspecified, port)
-
-  inline def loopbackAddress(port: Port): SocketAddressIp4 =
-    apply(Ip4Address.loopback, port)
-
-  extension (a: SocketAddressIp4) {
-
-    inline def port: Port = helpers.scala_uv_sockaddr_in_port(a).toInt
-    inline def addr: Ip4Address = helpers.scala_uv_sockaddr_in_addr(a)
-
-  }
-
-}
-
-opaque type SocketAddressIp6 <: SocketAddress = Ptr[Byte]
-
-type AddressFamily = CInt
-
-object AddressFamily {
-
-  val inet: AddressFamily = helpers.scala_uv_value_af_inet()
-  val inet6: AddressFamily = helpers.scala_uv_value_af_inet6()
-
-}
-
-opaque type AddrInfo <: CStruct = CStruct8[
-  CInt,
-  AddressFamily,
-  CInt,
-  CInt,
-  CUnsignedInt,
-  SocketAddress,
-  CString,
-  Ptr[Byte] // can't use AddrInfo here because of recursion compiler error
-]
-
-object AddrInfo {
-
-  given Tag[AddrInfo] = Tag.CStruct8(
-    summon[Tag[CInt]],
-    summon[Tag[AddressFamily]],
-    summon[Tag[CInt]],
-    summon[Tag[CInt]],
-    summon[Tag[CUnsignedInt]],
-    summon[Tag[SocketAddress]],
-    summon[Tag[CString]],
-    summon[Tag[Ptr[Byte]]]
-  )
-
-  extension (a: AddrInfo) {
-    // these can't be inlined because the implicits for the Tag[CStruct8[...]] don't work, don't know why
-    def flags: CInt = a._1
-    def flags_=(v: CInt): Unit = a._1 = v
-    def family: AddressFamily = a._2
-    def family_=(v: AddressFamily): Unit = a._2 = v
-    def socktype: CInt = a._3
-    def socktype_=(v: CInt): Unit = a._3 = v
-    def protocol: CInt = a._4
-    def protocol_=(v: CInt): Unit = a._4 = v
-    def addrlen: CUnsignedInt = a._5
-    def addrlen_=(v: CUnsignedInt): Unit = a._5 = v
-    def addr: SocketAddress = a._6
-    def addr_=(v: SocketAddress): Unit = a._6 = v
-    def canonname: CString = a._7
-    def canonname_=(v: CString): Unit = a._7 = v
-    def next: AddrInfo = a._8.asInstanceOf[AddrInfo]
-    def next_=(v: AddrInfo): Unit = a._8 = v.asInstanceOf[Ptr[Byte]]
-  }
 }

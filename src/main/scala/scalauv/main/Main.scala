@@ -18,7 +18,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-    withZone {
+    Zone {
       val loop = uv_default_loop()
 
       val asyncHandle = AsyncHandle.zoneAllocate()

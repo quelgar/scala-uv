@@ -202,7 +202,7 @@ object FileReq {
 
     inline def path: CString = LibUv.uv_fs_get_path(req)
 
-    inline def statBuf: Stat = LibUv.uv_fs_get_statbuf(req)
+    inline def statBuf: Ptr[Stat] = LibUv.uv_fs_get_statbuf(req)
 
     inline def cleanup(): Unit = LibUv.uv_fs_req_cleanup(req)
 

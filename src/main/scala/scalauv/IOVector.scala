@@ -56,7 +56,7 @@ object IOVector {
     */
   inline def stackAllocateForBuffer(
       ptr: Ptr[Byte],
-      size: CUnsignedInt
+      size: CSize
   ): IOVector = {
     val buffer = Buffer.stackAllocate(ptr, size)
     IOVector(buffer, 1)
@@ -65,7 +65,7 @@ object IOVector {
   /** Stack allocates multiple buffer structures.
     */
   inline def stackAllocateForBuffers(
-      buffers: Seq[(Ptr[Byte], CUnsignedInt)]
+      buffers: Seq[(Ptr[Byte], CSize)]
   ): IOVector = {
     val uvBufs =
       stackalloc[Byte](buffers.size.toUInt * Buffer.structureSize)

@@ -6,6 +6,10 @@ import LibUv.*
 import scalanative.unsafe.*
 import scalanative.unsigned.*
 import scala.scalanative.libc.stdlib
+import scala.scalanative.posix.netinet.*
+import inOps.*
+import scala.scalanative.posix.sys.socket
+import scala.scalanative.posix.arpa.inet
 
 final class TcpSpec {
 
@@ -16,7 +20,7 @@ final class TcpSpec {
 
     var runResult = 0
 
-    withZone {
+    Zone {
 
       val loop = stackalloc[Byte](uv_loop_size()).asInstanceOf[Loop]
       uv_loop_init(loop).checkErrorThrowIO()
@@ -24,19 +28,29 @@ final class TcpSpec {
       val port = 10000
       val serverTcpHandle = TcpHandle.stackAllocate()
       uv_tcp_init(loop, serverTcpHandle).checkErrorThrowIO()
-      val serverSocketAddress = SocketAddressIp4.unspecifiedAddress(port)
-      uv_tcp_bind(serverTcpHandle, serverSocketAddress, 0.toUInt)
+      val serverSocketAddress = stackalloc[in.sockaddr_in]()
+      serverSocketAddress.sin_family = socket.AF_INET.toUShort
+      serverSocketAddress.sin_port = inet.htons(port.toUShort)
+      serverSocketAddress.sin_addr.s_addr = in.INADDR_ANY
+      uv_tcp_bind(
+        serverTcpHandle,
+        serverSocketAddress.asInstanceOf[Ptr[socket.sockaddr]],
+        0.toUInt
+      )
         .checkErrorThrowIO()
       uv_listen(serverTcpHandle, 128, onNewConnection).checkErrorThrowIO()
 
       val clientTcpHandle = TcpHandle.stackAllocate()
       uv_tcp_init(loop, clientTcpHandle).checkErrorThrowIO()
-      val clientSocketAddress = SocketAddressIp4.loopbackAddress(port)
+      val clientSocketAddress = stackalloc[in.sockaddr_in]()
+      clientSocketAddress.sin_family = socket.AF_INET.toUShort
+      clientSocketAddress.sin_port = inet.htons(port.toUShort)
+      Net.setLocalHostSocket4(clientSocketAddress)
       val connectReq = ConnectReq.stackAllocate()
       uv_tcp_connect(
         connectReq,
         clientTcpHandle,
-        clientSocketAddress,
+        clientSocketAddress.asInstanceOf[Ptr[socket.sockaddr]],
         onConnect
       ).checkErrorThrowIO()
 
@@ -111,7 +125,7 @@ object TcpSpec {
     def doWrite(text: String) = {
       val writeReq = WriteReq.malloc()
       val cText = mallocCString(text)
-      val buf = Buffer.malloc(cText, text.length.toULong)
+      val buf = Buffer.malloc(cText, text.length.toCSize)
       uv_req_set_data(writeReq, buf.toPtr)
       uv_write(writeReq, stream, buf, 1.toUInt, onWrite).onFailMessage { s =>
         stdlib.free(cText)
@@ -129,7 +143,7 @@ object TcpSpec {
 
   def onRead: StreamReadCallback = {
     (handle: StreamHandle, numRead: CSSize, buf: Buffer) =>
-      numRead match {
+      numRead.toInt match {
         case ErrorCodes.EOF =>
           uv_close(handle, onClose)
         case code if code < 0 =>

@@ -50,7 +50,7 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-    withZone {
+    Zone {
       val loop = uv_default_loop()
 
       val asyncHandle = AsyncHandle.zoneAllocate()
@@ -82,9 +82,9 @@ scala-uv tries to expose the exact C API of libuv as directly as possible. Howev
 
 Most of the libuv functions can be found in the `LibUv` object, with the same name as the C function. The exceptions are the following:
 
-* `uv_loop_configuration` — currently not supported
-* `uv_fileno` — currently not supported
-* `uv_poll_init_socket` — currently not supported
+* `uv_loop_configuration` — not yet supported
+* `uv_fileno` — not yet supported
+* `uv_poll_init_socket` — not yet supported
 * Process handle functions — not yet supported
 * `uv_socketpair` — not yet supported
 * `uv_udp_open` — not yet supported
@@ -233,7 +233,7 @@ def onNewConnection: ConnectionCallback = {
 
 The libuv file I/O functions support use of multiple buffers at once. scala-uv provides the `IOVector` type for working with multiple buffers with varying amoutns of data.
 
-scala-uv provides a shortcut for allocating, using and freeing `FileReq` objects, *if you are doing blocking I/O*: `FileReq.use`.
+scala-uv provides a shortcut for allocating, using and freeing `FileReq` objects, if you are doing *blocking* I/O: `FileReq.use`.
 
 ```scala
 // writes the C string pointed to by `cText` to a file

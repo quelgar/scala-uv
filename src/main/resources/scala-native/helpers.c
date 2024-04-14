@@ -1,12 +1,6 @@
 #include <uv.h>
 #include <string.h>
 
-#ifdef _WIN32
-#include <winsock.h>
-#else
-#include <netinet/in.h>
-#endif
-
 uv_loop_t *scala_uv_fs_req_get_loop(const uv_fs_t *req)
 {
     return req->loop;
@@ -67,32 +61,6 @@ uv_stream_t *scala_uv_write_stream_handle(const uv_write_t *req)
 uv_stream_t *scala_uv_send_stream_handle(const uv_write_t *req)
 {
     return req->send_handle;
-}
-
-size_t scala_uv_sizeof_sockaddr_in()
-{
-    return sizeof(struct sockaddr_in);
-}
-
-void scala_uv_init_sockaddr_in(int address, int port, struct sockaddr_in *addr)
-{
-    addr->sin_family = AF_INET;
-    addr->sin_addr.s_addr = htonl(address);
-    addr->sin_port = htons(port);
-}
-
-size_t scala_uv_sizeof_sockaddr_in6()
-{
-    return sizeof(struct sockaddr_in6);
-}
-
-void scala_uv_init_sockaddr_in6(const char *address, int port, unsigned int flow_info, unsigned int scope_id, struct sockaddr_in6 *addr)
-{
-    addr->sin6_family = AF_INET6;
-    memcpy(&(addr->sin6_addr), address, sizeof(struct in6_addr));
-    addr->sin6_port = htons(port);
-    addr->sin6_flowinfo = htonl(flow_info);
-    addr->sin6_scope_id = htonl(scope_id);
 }
 
 // File open constants
@@ -205,29 +173,4 @@ int scala_uv_value_o_trunc()
 int scala_uv_value_o_wronly()
 {
     return UV_FS_O_WRONLY;
-}
-
-int scala_uv_value_af_inet()
-{
-    return AF_INET;
-}
-
-int scala_uv_value_af_inet6()
-{
-    return AF_INET6;
-}
-
-sa_family_t scala_uv_sockaddr_family(const struct sockaddr *addr)
-{
-    return addr->sa_family;
-}
-
-in_port_t scala_uv_sockaddr_port(const struct sockaddr_in *addr)
-{
-    return addr->sin_port;
-}
-
-struct in_addr *scala_uv_sockaddr_address(const struct sockaddr_in *addr)
-{
-    return &(addr->sin_addr);
 }

@@ -1,6 +1,10 @@
 package scalauv
 
 import scala.scalanative.unsafe.*
+import scala.scalanative.posix.netinet.in
+import scala.scalanative.posix.sys.socket
+import scala.scalanative.posix.netdb
+import scala.scalanative.posix.inttypes.*
 
 opaque type Loop = Ptr[Byte]
 
@@ -149,7 +153,7 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/loop.html#c.uv_now LibUv docs]]
     * @group event_loop
     */
-  def uv_now(loop: Loop): CUnsignedLongLong = extern
+  def uv_now(loop: Loop): uint64_t = extern
 
   /** Update event loop's current time.
     *
@@ -433,7 +437,7 @@ object LibUv {
     */
   def uv_timer_set_repeat(
       handle: TimerHandle,
-      repeatMillis: CUnsignedLongLong
+      repeatMillis: uint64_t
   ): Unit =
     extern
 
@@ -443,7 +447,7 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/timer.html#c.uv_timer_get_repeat LibUv docs]]
     * @group timer_handle
     */
-  def uv_timer_get_repeat(handle: TimerHandle): CUnsignedLongLong = extern
+  def uv_timer_get_repeat(handle: TimerHandle): uint64_t = extern
 
   /** Gets the time until a timer is due.
     *
@@ -451,7 +455,7 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/timer.html#c.uv_timer_get_due_in LibUv docs]]
     * @group timer_handle
     */
-  def uv_timer_get_due_in(handle: TimerHandle): CUnsignedLongLong = extern
+  def uv_timer_get_due_in(handle: TimerHandle): uint64_t = extern
 
   // =========================================================
   // Prepare handle
@@ -697,15 +701,15 @@ object LibUv {
 
 //   type ProcessHandle = Handle
 
-//   type ProcessOptions = Ptr[CStruct10[ExitCallback, CString, Ptr[CString], Ptr[
+//   type ProcessOptions = CStruct10[ExitCallback, CString, Ptr[CString], Ptr[
 //     CString
-//   ], CString, CUnsignedInt, CInt, StdioContainer, Uid, Guid]]
+//   ], CString, CUnsignedInt, CInt, StdioContainer, Uid, Guid]
 
 //   type ExitCallback = CFuncPtr3[ProcessHandle, CLongLong, CInt, Unit]
 
 //   type ProcessFlags = CInt
 
-//   type StdioContainer = Ptr[CStruct2[StdioFlags, StreamHandle]]
+//   type StdioContainer = CStruct2[StdioFlags, StreamHandle]
 
 //   type StdioFlags = CInt
 
@@ -977,7 +981,7 @@ object LibUv {
     */
   def uv_tcp_bind(
       handle: TcpHandle,
-      addr: SocketAddress,
+      addr: Ptr[socket.sockaddr],
       flags: CUnsignedInt
   ): ErrorCode = extern
 
@@ -989,7 +993,7 @@ object LibUv {
     */
   def uv_tcp_getsockname(
       handle: TcpHandle,
-      name: SocketAddress,
+      name: Ptr[socket.sockaddr],
       namelen: Ptr[CInt]
   ): ErrorCode = extern
 
@@ -1001,7 +1005,7 @@ object LibUv {
     */
   def uv_tcp_getpeername(
       handle: TcpHandle,
-      name: SocketAddress,
+      name: Ptr[socket.sockaddr],
       namelen: Ptr[CInt]
   ): ErrorCode = extern
 
@@ -1014,7 +1018,7 @@ object LibUv {
   def uv_tcp_connect(
       req: Req,
       handle: TcpHandle,
-      addr: SocketAddress,
+      addr: Ptr[socket.sockaddr],
       cb: ConnectCallback
   ): ErrorCode = extern
 
@@ -1263,7 +1267,7 @@ object LibUv {
     * @group udp_handle
     */
   type UdpRecvCallback =
-    CFuncPtr5[UdpHandle, CSSize, Buffer, SocketAddress, CUnsignedInt, Unit]
+    CFuncPtr5[UdpHandle, CSSize, Buffer, socket.sockaddr, CUnsignedInt, Unit]
 
   /** Initializes a UDP handle.
     *
@@ -1297,7 +1301,7 @@ object LibUv {
     */
   def uv_udp_bind(
       handle: UdpHandle,
-      addr: SocketAddress,
+      addr: socket.sockaddr,
       flags: CUnsignedInt
   ): ErrorCode = extern
 
@@ -1309,7 +1313,7 @@ object LibUv {
     */
   def uv_udp_connect(
       handle: UdpHandle,
-      addr: SocketAddress
+      addr: socket.sockaddr
   ): ErrorCode = extern
 
   /** Gets the socket address of the peer for a UDP handle.
@@ -1320,7 +1324,7 @@ object LibUv {
     */
   def uv_udp_getpeername(
       handle: UdpHandle,
-      name: SocketAddress,
+      name: socket.sockaddr,
       namelen: Ptr[CInt]
   ): ErrorCode = extern
 
@@ -1332,7 +1336,7 @@ object LibUv {
     */
   def uv_udp_getsockname(
       handle: UdpHandle,
-      name: SocketAddress,
+      name: socket.sockaddr,
       namelen: Ptr[CInt]
   ): ErrorCode = extern
 
@@ -1419,7 +1423,7 @@ object LibUv {
       handle: UdpHandle,
       bufs: Buffer,
       numberOfBufs: CUnsignedInt,
-      addr: SocketAddress,
+      addr: socket.sockaddr,
       sendCb: UdpSendCallback
   ): ErrorCode = extern
 
@@ -1433,7 +1437,7 @@ object LibUv {
       handle: UdpHandle,
       bufs: Buffer,
       numberOfBufs: CUnsignedInt,
-      addr: SocketAddress
+      addr: socket.sockaddr
   ): CInt = extern
 
   /** Starts reading from a UDP handle.
@@ -1550,7 +1554,8 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_poll_cb LibUv docs]]
     * @group fs_poll_handle
     */
-  type FsPollCallback = CFuncPtr4[FsPollHandle, ErrorCode, Stat, Stat, Unit]
+  type FsPollCallback =
+    CFuncPtr4[FsPollHandle, ErrorCode, Ptr[Stat], Ptr[Stat], Unit]
 
   /** Initializes a file system poll handle.
     *
@@ -1821,7 +1826,7 @@ object LibUv {
   def uv_fs_closedir(
       loop: Loop,
       req: FileReq,
-      dir: Dir,
+      dir: Ptr[Dir],
       cb: FsCallback
   ): ErrorCode = extern
 
@@ -1834,7 +1839,7 @@ object LibUv {
   def uv_fs_readdir(
       loop: Loop,
       req: FileReq,
-      dir: Dir,
+      dir: Ptr[Dir],
       cb: FsCallback
   ): ErrorCode = extern
 
@@ -2216,7 +2221,7 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/fs.html#c.uv_fs_get_statbuf LibUv docs]]
     * @group fs
     */
-  def uv_fs_get_statbuf(req: FileReq): Stat = extern
+  def uv_fs_get_statbuf(req: FileReq): Ptr[Stat] = extern
 
   // TODO: what type to use for OsFileHandle?
 //   def uv_fs_getosfhandle(fd: CInt): OsFileHandle = extern
@@ -2265,7 +2270,7 @@ object LibUv {
     * @group dns
     */
   type GetAddrInfoCallback =
-    CFuncPtr3[GetAddrInfoReq, ErrorCode, AddrInfo, Unit]
+    CFuncPtr3[GetAddrInfoReq, ErrorCode, netdb.addrinfo, Unit]
 
   /** Callback for getting name info from DNS.
     *
@@ -2293,7 +2298,7 @@ object LibUv {
       getaddrinfo_cb: GetAddrInfoCallback,
       node: CString,
       service: CString,
-      hints: Ptr[AddrInfo]
+      hints: Ptr[netdb.addrinfo]
   ): ErrorCode = extern
 
   /** Free address info.
@@ -2302,7 +2307,7 @@ object LibUv {
     *   [[https://docs.libuv.org/en/v1.x/dns.html#c.uv_freeaddrinfo LibUv docs]]
     * @group dns
     */
-  def uv_freeaddrinfo(ai: AddrInfo): Unit = extern
+  def uv_freeaddrinfo(ai: netdb.addrinfo): Unit = extern
 
   /** Get name info from DNS.
     *
@@ -2314,7 +2319,7 @@ object LibUv {
       loop: Loop,
       req: GetNameInfoReq,
       getnameinfo_cb: GetNameInfoCallback,
-      addr: SocketAddress,
+      addr: socket.sockaddr,
       flags: CInt
   ): ErrorCode = extern
 
@@ -2396,19 +2401,19 @@ object LibUv {
     *
     * @group misc
     */
-  type TimeVal = Ptr[CStruct2[CLong, CLong]]
+  type TimeVal = CStruct2[CLong, CLong]
 
   /** 64-bit time type.
     *
     * @group misc
     */
-  type TimeVal64 = Ptr[CStruct2[Long, Int]]
+  type TimeVal64 = CStruct2[Long, Int]
 
   /** 64-bit time type.
     *
     * @group misc
     */
-  type TimeSpec64 = Ptr[CStruct2[Long, Int]]
+  type TimeSpec64 = CStruct2[Long, Int]
 
   /** Gets the error message for the given error code.
     *
@@ -2443,7 +2448,7 @@ object LibUv {
   def uv_ip4_addr(
       ip: CString,
       port: CInt,
-      addr: SocketAddressIp4
+      addr: in.sockaddr_in
   ): ErrorCode =
     extern
 
@@ -2456,7 +2461,7 @@ object LibUv {
   def uv_ip6_addr(
       ip: CString,
       port: CInt,
-      addr: SocketAddressIp6
+      addr: in.sockaddr_in6
   ): ErrorCode =
     extern
 
@@ -2467,7 +2472,7 @@ object LibUv {
     * @group misc
     */
   def uv_ip4_name(
-      src: Ptr[SocketAddressIp4],
+      src: Ptr[in.sockaddr_in],
       dst: CString,
       size: CSize
   ): ErrorCode = extern
@@ -2479,7 +2484,7 @@ object LibUv {
     * @group misc
     */
   def uv_ip6_name(
-      src: Ptr[SocketAddressIp6],
+      src: Ptr[in.sockaddr_in6],
       dst: CString,
       size: CSize
   ): ErrorCode = extern
