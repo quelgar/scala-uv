@@ -9,7 +9,7 @@ Only Scala 3 is supported.
 ## Getting it
 
 ```scala
-libraryDependencies += "io.github.quelgar" %%% "scala-uv" % "0.0.2"
+libraryDependencies += "io.github.quelgar" %%% "scala-uv" % "0.1.0"
 ```
 
 ## Current status
